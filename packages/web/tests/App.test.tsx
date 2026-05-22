@@ -1,48 +1,34 @@
-import { render, screen, waitFor } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { render, screen } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
+import { describe, expect, it } from "vitest";
 
 import { App } from "../src/App";
 
 describe("App", () => {
-  beforeEach(() => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(
-        async () =>
-          new Response(JSON.stringify({ status: "ok", version: "0.1.0" }), {
-            status: 200,
-            headers: { "Content-Type": "application/json" },
-          }),
-      ),
+  it("renders the app shell with myvoice branding", () => {
+    render(
+      <MemoryRouter>
+        <App />
+      </MemoryRouter>,
     );
+    expect(screen.getByText("myvoice")).toBeInTheDocument();
   });
 
-  afterEach(() => {
-    vi.unstubAllGlobals();
-  });
-
-  it("renders the app title", async () => {
-    render(<App />);
-    await waitFor(() => {
-      expect(screen.getByRole("heading", { name: /myvoice/i })).toBeInTheDocument();
-    });
-  });
-
-  it("loads and displays backend version", async () => {
-    render(<App />);
-    await waitFor(() => {
-      expect(screen.getByText(/backend v0\.1\.0/i)).toBeInTheDocument();
-    });
-  });
-
-  it("displays error when health fetch fails", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => new Response("oops", { status: 500 })),
+  it("shows the Packs nav link", () => {
+    render(
+      <MemoryRouter initialEntries={["/packs"]}>
+        <App />
+      </MemoryRouter>,
     );
-    render(<App />);
-    await waitFor(() => {
-      expect(screen.getByText(/HTTP 500/)).toBeInTheDocument();
-    });
+    expect(screen.getAllByText(/Packs/i).length).toBeGreaterThan(0);
+  });
+
+  it("shows the pack detail page for a slug", () => {
+    render(
+      <MemoryRouter initialEntries={["/packs/dan"]}>
+        <App />
+      </MemoryRouter>,
+    );
+    expect(screen.getByRole("heading", { name: "dan" })).toBeInTheDocument();
   });
 });
