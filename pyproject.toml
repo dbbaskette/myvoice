@@ -10,9 +10,10 @@ dependencies = [
     "fastapi>=0.115",
     "uvicorn[standard]>=0.32",
     "click>=8.1",
+    "httpx>=0.27",
+    "pydantic>=2.9",
     "pyyaml>=6.0",
     "watchfiles>=1.0",
-    "httpx>=0.27",
 ]
 
 [project.scripts]

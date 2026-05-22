@@ -1,0 +1,9 @@
+spec_version: "1.0"
+pack:
+  slug: valid-minimal
+  name: "Minimal Valid Pack"
+  version: "0.1.0"
+  author: "Test"
+persona:
+  identity: "The Tester"
+  one_line: "Tests the minimum viable pack."
