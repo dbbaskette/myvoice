@@ -2,7 +2,7 @@
 
 Local-first style-pack editor for AI-assisted writing. Create, edit, and use portable writing-style packs that capture an author's voice (banished vocabulary, principles, samples, format add-ons, bios).
 
-> **Status:** Phase 1 (Foundation) — backend + frontend scaffolding only. Pack editing, AI extraction, and compose/test land in subsequent phases.
+> **Status:** Phase 2 (Style Pack Format & Core Tools). Pack format spec + Python compose/lint/validate + reference packs landed. Pack editing UI, AI extraction, and compose/test land in subsequent phases.
 
 ## Install
 
@@ -73,11 +73,47 @@ Common commands (from repo root):
 ```
 myvoice/
 ├── packages/
-│   ├── api/        Python backend (FastAPI)
+│   ├── api/        Python backend (FastAPI + pack tools)
 │   │   └── myvoice/
 │   └── web/        React + Vite + TS + Tailwind frontend
-├── packs/          Style packs shipped with the install (added in Phase 2)
+├── packs/          Style packs shipped with the install
+│   ├── dan/        Reference pack (Dan Baskette voice)
+│   └── _template/  Scaffold for new packs
 └── docs/           Design and implementation plans
+```
+
+## Style packs
+
+A **style pack** is a portable directory that captures a writer's voice. It conforms to [SPEC.md](./SPEC.md) v1.0. Each pack contains:
+
+- `stylepack.yaml` — manifest (banished words, rules, formats list, bios list)
+- `style-guide.md` — prose writing principles
+- `formats/` — format add-ons (blog post, LinkedIn, tweet thread, …)
+- `samples/` — voice exemplars (real passages the LLM uses for tone-matching)
+- `bios/` — standing bio content (Twitter, LinkedIn, conference, book jacket)
+
+The repo ships two packs:
+
+- `packs/dan/` — Dan Baskette's voice, the reference pack (v3.0 from Dan-AI)
+- `packs/_template/` — empty scaffold; copy to start your own
+
+### CLI
+
+```bash
+# List discovered packs
+myvoice pack list --root packs
+
+# Validate a pack against SPEC v1.0
+myvoice pack validate packs/dan
+
+# Compose a prompt from a pack
+myvoice pack compose packs/dan --format blog-post --samples 01,04 --draft draft.md > prompt.md
+
+# Lint a draft against a pack's banished vocabulary + rules
+myvoice pack lint packs/dan draft.md
+
+# Emit a bio body (no prompt assembly)
+myvoice pack compose packs/dan --bio linkedin-about
 ```
 
 ## Design
