@@ -157,3 +157,43 @@ def test_get_manifest_returns_full_yaml_as_json(
         data = r.json()
         assert data["spec_version"] == "1.0"
         assert data["pack"]["slug"] == "alpha"
+
+
+def test_get_pack_file_returns_text(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _seed_packs(tmp_path)
+    monkeypatch.setenv("MYVOICE_PACKS_ROOT", str(tmp_path))
+    from myvoice.server import create_app
+
+    with TestClient(create_app()) as client:
+        r = client.get("/api/packs/alpha/files/style-guide.md")
+        assert r.status_code == 200
+        assert r.text == "body"
+        assert r.headers["content-type"].startswith("text/plain")
+
+
+def test_get_pack_file_404_for_missing_file(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _seed_packs(tmp_path)
+    monkeypatch.setenv("MYVOICE_PACKS_ROOT", str(tmp_path))
+    from myvoice.server import create_app
+
+    with TestClient(create_app()) as client:
+        r = client.get("/api/packs/alpha/files/does-not-exist.md")
+        assert r.status_code == 404
+
+
+def test_get_pack_file_rejects_path_traversal(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _seed_packs(tmp_path)
+    (tmp_path / "secret.txt").write_text("not yours")
+    monkeypatch.setenv("MYVOICE_PACKS_ROOT", str(tmp_path))
+    from myvoice.server import create_app
+
+    with TestClient(create_app()) as client:
+        # Attempt to escape via ..
+        r = client.get("/api/packs/alpha/files/../secret.txt")
+        assert r.status_code in (400, 404)  # FastAPI may normalize the path
+        # Belt and suspenders: confirm secret content is NOT returned
+        assert "not yours" not in r.text

@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from fastapi import APIRouter, HTTPException, Request
+from fastapi.responses import PlainTextResponse
 
 router = APIRouter(prefix="/api/packs", tags=["packs"])
 
@@ -79,3 +80,27 @@ def get_manifest(slug: str, request: Request) -> dict[str, Any]:
     raw = yaml.safe_load(manifest_path.read_text(encoding="utf-8"))
     assert isinstance(raw, dict)
     return raw
+
+
+@router.get("/{slug}/files/{path:path}", response_class=PlainTextResponse)
+def get_pack_file(slug: str, path: str, request: Request) -> str:
+    """Return the raw text content of a file within a pack."""
+    from pathlib import Path
+
+    store = request.app.state.pack_store
+    info = store.get(slug)
+    if info is None:
+        raise HTTPException(status_code=404, detail=f"pack '{slug}' not found")
+
+    # Path-traversal guard: resolve and require resulting path to be inside pack root.
+    pack_root: Path = info.root_path.resolve()
+    requested: Path = (pack_root / path).resolve()
+    try:
+        requested.relative_to(pack_root)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail="path escapes pack root") from exc
+
+    if not requested.is_file():
+        raise HTTPException(status_code=404, detail=f"file '{path}' not found in pack '{slug}'")
+
+    return requested.read_text(encoding="utf-8")
