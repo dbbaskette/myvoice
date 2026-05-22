@@ -1,9 +1,41 @@
-"""Tests for POST /api/packs/{slug}/samples."""
+"""Tests for POST /api/packs/{slug}/samples.
+
+Uses an isolated pack root (copied from the real packs/dan) so tests never
+mutate the checked-in fixture packs.
+"""
 from __future__ import annotations
 
+import shutil
+from pathlib import Path
 
-def test_create_sample_appends_manifest_and_writes_file(client_with_config) -> None:
-    client, _ = client_with_config
+import pytest
+from fastapi.testclient import TestClient
+
+from myvoice.server import create_app
+
+# Path to the real dan pack — used as a copy source.
+_REPO_ROOT = Path(__file__).resolve().parents[4]
+_DAN_PACK = _REPO_ROOT / "packs" / "dan"
+
+
+@pytest.fixture
+def samples_client(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    """TestClient with an isolated copy of packs/dan.
+
+    Uses MYVOICE_PACKS_ROOT so no real pack dirs are touched.
+    """
+    packs_root = tmp_path / "packs"
+    packs_root.mkdir()
+    shutil.copytree(_DAN_PACK, packs_root / "dan")
+    monkeypatch.setenv("MYVOICE_PACKS_ROOT", str(packs_root))
+    monkeypatch.setenv("MYVOICE_CONFIG_PATH", str(tmp_path / "config.yaml"))
+    app = create_app()
+    with TestClient(app) as c:
+        yield c
+
+
+def test_create_sample_appends_manifest_and_writes_file(samples_client) -> None:
+    client = samples_client
     # Baseline manifest
     r0 = client.get("/api/packs/dan/manifest")
     assert r0.status_code == 200
@@ -28,8 +60,8 @@ def test_create_sample_appends_manifest_and_writes_file(client_with_config) -> N
     assert len(r2.json()["samples"]) == sample_count + 1
 
 
-def test_sample_id_auto_increments(client_with_config) -> None:
-    client, _ = client_with_config
+def test_sample_id_auto_increments(samples_client) -> None:
+    client = samples_client
     r1 = client.post("/api/packs/dan/samples", json={"excerpt": "First sample passage."})
     r2 = client.post("/api/packs/dan/samples", json={"excerpt": "Second sample passage."})
     assert r1.status_code == 201
@@ -37,14 +69,14 @@ def test_sample_id_auto_increments(client_with_config) -> None:
     assert int(r1.json()["id"]) + 1 == int(r2.json()["id"])
 
 
-def test_create_sample_unknown_pack_returns_404(client_with_config) -> None:
-    client, _ = client_with_config
+def test_create_sample_unknown_pack_returns_404(samples_client) -> None:
+    client = samples_client
     r = client.post("/api/packs/no-such-pack/samples", json={"excerpt": "hi"})
     assert r.status_code == 404
 
 
-def test_create_sample_writes_blockquote_and_metadata(client_with_config) -> None:
-    client, _ = client_with_config
+def test_create_sample_writes_blockquote_and_metadata(samples_client) -> None:
+    client = samples_client
     r = client.post(
         "/api/packs/dan/samples",
         json={
@@ -56,7 +88,7 @@ def test_create_sample_writes_blockquote_and_metadata(client_with_config) -> Non
     assert r.status_code == 201
     file_rel = r.json()["file"]
 
-    # Retrieve the written file
+    # Retrieve the written file via the files endpoint
     r2 = client.get(f"/api/packs/dan/files/{file_rel}")
     assert r2.status_code == 200
     content = r2.text
@@ -65,8 +97,8 @@ def test_create_sample_writes_blockquote_and_metadata(client_with_config) -> Non
     assert "> Builders build. Shippers ship." in content
 
 
-def test_create_sample_no_source_or_note(client_with_config) -> None:
-    client, _ = client_with_config
+def test_create_sample_no_source_or_note(samples_client) -> None:
+    client = samples_client
     r = client.post("/api/packs/dan/samples", json={"excerpt": "Plain excerpt only."})
     assert r.status_code == 201
     file_rel = r.json()["file"]
