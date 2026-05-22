@@ -27,6 +27,11 @@ class PackStore:
                 self._by_slug[info.slug] = info
         self._conflicts = {slug: paths for slug, paths in seen.items() if len(paths) > 1}
 
+    def rescan(self, new_roots: list[str] | list[Path]) -> None:
+        """Update pack roots and re-walk discovery. Accepts str or Path entries."""
+        self._roots = [Path(r) for r in new_roots]
+        self.reload()
+
     def slugs(self) -> list[str]:
         return sorted(self._by_slug.keys())
 

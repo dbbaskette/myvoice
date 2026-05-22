@@ -10,6 +10,7 @@ from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
 from myvoice import __version__
+from myvoice.config import default_config_path, load_config
 from myvoice.packs.store import PackStore
 
 
@@ -49,8 +50,16 @@ def _resolve_pack_roots() -> list[Path]:
 
 @asynccontextmanager
 async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
-    """Initialize PackStore on startup. Nothing to clean up on shutdown."""
-    app.state.pack_store = PackStore(_resolve_pack_roots())
+    """Initialize config + PackStore on startup. Nothing to clean up on shutdown."""
+    cfg_path = default_config_path()
+    cfg = load_config(cfg_path)
+    app.state.config = cfg
+    app.state.config_path = cfg_path
+    # Merge config pack_paths with any env-specified roots (env takes priority).
+    pack_roots = _resolve_pack_roots()
+    if not pack_roots and cfg.pack_paths:
+        pack_roots = [Path(p) for p in cfg.pack_paths]
+    app.state.pack_store = PackStore(pack_roots)
     yield
 
 
@@ -58,7 +67,10 @@ def create_app() -> FastAPI:
     """Build and return the FastAPI app."""
     app = FastAPI(title="myvoice", version=__version__, lifespan=_lifespan)
 
+    from myvoice.api.config import router as config_router
     from myvoice.api.packs import router as packs_router
+
+    app.include_router(config_router)
     app.include_router(packs_router)
 
     @app.get("/api/health")
