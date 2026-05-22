@@ -197,3 +197,67 @@ def test_get_pack_file_rejects_path_traversal(
         assert r.status_code in (400, 404)  # FastAPI may normalize the path
         # Belt and suspenders: confirm secret content is NOT returned
         assert "not yours" not in r.text
+
+
+def test_put_manifest_writes_and_validates(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _seed_packs(tmp_path)
+    monkeypatch.setenv("MYVOICE_PACKS_ROOT", str(tmp_path))
+    from myvoice.server import create_app
+
+    with TestClient(create_app()) as client:
+        # Read existing manifest
+        r = client.get("/api/packs/alpha/manifest")
+        manifest = r.json()
+        # Mutate
+        manifest["pack"]["description"] = "Updated!"
+        # PUT it back
+        r = client.put("/api/packs/alpha/manifest", json=manifest)
+        assert r.status_code == 200, r.text
+        assert r.json()["valid"] is True
+        # Confirm round-trip
+        r2 = client.get("/api/packs/alpha/manifest")
+        assert r2.json()["pack"]["description"] == "Updated!"
+
+
+def test_put_manifest_rejects_invalid(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _seed_packs(tmp_path)
+    monkeypatch.setenv("MYVOICE_PACKS_ROOT", str(tmp_path))
+    from myvoice.server import create_app
+
+    with TestClient(create_app()) as client:
+        r = client.put(
+            "/api/packs/alpha/manifest",
+            json={"spec_version": "1.0", "pack": {"slug": "alpha"}},  # missing required fields
+        )
+        assert r.status_code == 422
+        assert "errors" in r.json()["detail"]
+
+
+def test_put_file_writes_text(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _seed_packs(tmp_path)
+    monkeypatch.setenv("MYVOICE_PACKS_ROOT", str(tmp_path))
+    from myvoice.server import create_app
+
+    with TestClient(create_app()) as client:
+        r = client.put(
+            "/api/packs/alpha/files/style-guide.md",
+            json={"content": "# Updated guide\n\nNew content."},
+        )
+        assert r.status_code == 200
+        # Round-trip
+        r2 = client.get("/api/packs/alpha/files/style-guide.md")
+        assert "Updated guide" in r2.text
+
+
+def test_put_file_rejects_path_traversal(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _seed_packs(tmp_path)
+    monkeypatch.setenv("MYVOICE_PACKS_ROOT", str(tmp_path))
+    from myvoice.server import create_app
+
+    with TestClient(create_app()) as client:
+        r = client.put(
+            "/api/packs/alpha/files/../secret.txt",
+            json={"content": "nope"},
+        )
+        # Should be 400 or 404, never 200
+        assert r.status_code != 200
