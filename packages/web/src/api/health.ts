@@ -5,6 +5,6 @@ export interface Health {
   version: string;
 }
 
-export async function getHealth(): Promise<Health> {
-  return apiFetch<Health>("/api/health");
+export async function getHealth(init?: RequestInit): Promise<Health> {
+  return apiFetch<Health>("/api/health", init);
 }

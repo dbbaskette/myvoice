@@ -7,9 +7,13 @@ export function App(): JSX.Element {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    getHealth()
+    const abort = new AbortController();
+    getHealth({ signal: abort.signal })
       .then((h) => setVersion(h.version))
-      .catch((e: Error) => setError(e.message));
+      .catch((e: Error) => {
+        if (e.name !== "AbortError") setError(e.message);
+      });
+    return () => abort.abort();
   }, []);
 
   return (
