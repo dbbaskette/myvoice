@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { NavLink, Navigate, Route, Routes, useParams } from "react-router-dom";
 
-import { type PackDetail, getPack } from "../api/packs";
+import { type PackDetail, getManifest, getPack, getPackFile } from "../api/packs";
+import { MarkdownEditor } from "../components/MarkdownEditor";
 import { PackOverview } from "../components/PackOverview";
 
 export function PackDetailPage(): JSX.Element {
@@ -106,18 +107,92 @@ function SubLink({ to, label, count, end }: SubLinkProps): JSX.Element {
   );
 }
 
-function ManifestStub(): JSX.Element {
-  return <div className="p-6 text-slate-400">Manifest editor lands in P3-T9.</div>;
-}
 function StyleGuideStub(): JSX.Element {
-  return <div className="p-6 text-slate-400">Markdown editor lands in P3-T8.</div>;
+  const { slug } = useParams<{ slug: string }>();
+  if (!slug) return <div />;
+  return <MarkdownEditor slug={slug} path="style-guide.md" />;
 }
+
 function FormatsStub(): JSX.Element {
-  return <div className="p-6 text-slate-400">Formats editor lands in P3-T8.</div>;
+  return <FileGroup category="formats" />;
 }
+
 function SamplesStub(): JSX.Element {
-  return <div className="p-6 text-slate-400">Samples editor lands in P3-T8.</div>;
+  return <FileGroup category="samples" />;
 }
+
 function BiosStub(): JSX.Element {
-  return <div className="p-6 text-slate-400">Bios editor lands in P3-T8.</div>;
+  return <FileGroup category="bios" />;
+}
+
+function ManifestStub(): JSX.Element {
+  const { slug } = useParams<{ slug: string }>();
+  const [text, setText] = useState<string | null>(null);
+  useEffect(() => {
+    if (!slug) return;
+    getPackFile(slug, "stylepack.yaml")
+      .then(setText)
+      .catch(() => setText("(error)"));
+  }, [slug]);
+  return (
+    <div className="p-6">
+      <p className="text-slate-400 text-sm mb-3">
+        Read-only YAML preview. Form editor lands in P3-T9.
+      </p>
+      <pre className="bg-slate-950 border border-slate-800 rounded p-4 text-xs text-slate-300 overflow-auto">
+        {text ?? "Loading…"}
+      </pre>
+    </div>
+  );
+}
+
+function FileGroup({ category }: { category: "formats" | "samples" | "bios" }): JSX.Element {
+  const { slug } = useParams<{ slug: string }>();
+  const [manifest, setManifest] = useState<Record<string, unknown> | null>(null);
+  const [selected, setSelected] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!slug) return;
+    getManifest(slug).then((m) => {
+      setManifest(m);
+      const entries = (m[category] as Array<{ file: string }> | undefined) ?? [];
+      if (entries.length > 0) setSelected(entries[0].file);
+    });
+  }, [slug, category]);
+
+  if (!slug) return <div />;
+  if (manifest === null) return <div className="p-6 text-slate-500">Loading…</div>;
+  const entries = (manifest[category] as Array<{ name?: string; id?: string; file: string }>) ?? [];
+  if (entries.length === 0) {
+    return <div className="p-6 text-slate-400">No {category} in this pack.</div>;
+  }
+
+  return (
+    <div className="flex h-full">
+      <ul className="w-[220px] shrink-0 border-r border-slate-800 overflow-y-auto bg-slate-950/30">
+        {entries.map((e) => (
+          <li key={e.file}>
+            <button
+              type="button"
+              onClick={() => setSelected(e.file)}
+              className={`w-full text-left px-4 py-2 text-sm ${
+                selected === e.file
+                  ? "bg-slate-800 text-slate-100"
+                  : "text-slate-300 hover:bg-slate-800/40"
+              }`}
+            >
+              {e.name ?? e.id ?? e.file}
+            </button>
+          </li>
+        ))}
+      </ul>
+      <div className="flex-1 min-w-0">
+        {selected ? (
+          <MarkdownEditor slug={slug} path={selected} />
+        ) : (
+          <div className="p-6 text-slate-500">Select a file</div>
+        )}
+      </div>
+    </div>
+  );
 }
