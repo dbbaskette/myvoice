@@ -15,6 +15,11 @@ build/
 node_modules/
 packages/web/dist/
 
+# TypeScript composite build outputs (from vite.config.ts type-checking)
+*.tsbuildinfo
+packages/web/vite.config.js
+packages/web/vite.config.d.ts
+
 # Backend-served frontend assets (built at release time)
 packages/api/myvoice/static/
 
