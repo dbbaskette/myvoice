@@ -1,6 +1,8 @@
 """FastAPI application factory."""
 
 import os
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI
@@ -8,6 +10,7 @@ from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
 from myvoice import __version__
+from myvoice.packs.store import PackStore
 
 
 def _default_static_dir() -> Path:
@@ -26,9 +29,34 @@ def _is_dev_mode() -> bool:
     return os.environ.get("MYVOICE_DEV", "").lower() in ("1", "true", "yes")
 
 
+def _resolve_pack_roots() -> list[Path]:
+    """Where to scan for packs.
+
+    Priority:
+    1. MYVOICE_PACKS_ROOT env var (single path).
+    2. Repo packs/ dir if it exists (dev/test mode).
+    3. Empty list (installed wheel; user packs come from Phase 4 config).
+    """
+    env = os.environ.get("MYVOICE_PACKS_ROOT")
+    if env:
+        return [Path(env)]
+    # `__file__` = packages/api/myvoice/server.py → parents[3] = repo root
+    repo_packs = Path(__file__).resolve().parents[3] / "packs"
+    if repo_packs.is_dir():
+        return [repo_packs]
+    return []
+
+
+@asynccontextmanager
+async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
+    """Initialize PackStore on startup. Nothing to clean up on shutdown."""
+    app.state.pack_store = PackStore(_resolve_pack_roots())
+    yield
+
+
 def create_app() -> FastAPI:
     """Build and return the FastAPI app."""
-    app = FastAPI(title="myvoice", version=__version__)
+    app = FastAPI(title="myvoice", version=__version__, lifespan=_lifespan)
 
     @app.get("/api/health")
     def health() -> dict[str, str]:
