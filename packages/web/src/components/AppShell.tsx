@@ -22,9 +22,7 @@ export function AppShell({ children }: AppShellProps): JSX.Element {
           <SidebarLink to="/extract" disabled>
             ✨ Extract from URLs
           </SidebarLink>
-          <SidebarLink to="/compose" disabled>
-            🔁 Compose &amp; test
-          </SidebarLink>
+          <SidebarLink to="/compose">🔁 Compose &amp; test</SidebarLink>
           <SidebarLink to="/settings">⚙ Settings</SidebarLink>
         </nav>
 
