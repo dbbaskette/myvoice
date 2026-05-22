@@ -1,5 +1,6 @@
 """FastAPI application factory."""
 
+import asyncio
 import os
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
@@ -13,6 +14,7 @@ from myvoice import __version__
 from myvoice.config import default_config_path, load_config
 from myvoice.jobs.registry import JobRegistry
 from myvoice.packs.store import PackStore
+from myvoice.watch import EventBus, watch_task
 
 
 def _default_static_dir() -> Path:
@@ -51,7 +53,7 @@ def _resolve_pack_roots() -> list[Path]:
 
 @asynccontextmanager
 async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
-    """Initialize config + PackStore on startup. Nothing to clean up on shutdown."""
+    """Initialize config + PackStore + EventBus + watch task on startup."""
     cfg_path = default_config_path()
     cfg = load_config(cfg_path)
     app.state.config = cfg
@@ -62,7 +64,27 @@ async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
         pack_roots = [Path(p) for p in cfg.pack_paths]
     app.state.pack_store = PackStore(pack_roots)
     app.state.job_registry = JobRegistry()
+
+    # Start the global event bus and file watcher.
+    app.state.event_bus = EventBus()
+    app.state.watch_stop = asyncio.Event()
+    app.state.watch_task_handle = asyncio.create_task(
+        watch_task(
+            pack_roots,
+            app.state.event_bus,
+            app.state.pack_store,
+            app.state.watch_stop,
+        )
+    )
+
     yield
+
+    # Shutdown: signal the watcher and wait (with a timeout).
+    app.state.watch_stop.set()
+    try:
+        await asyncio.wait_for(app.state.watch_task_handle, timeout=2.0)
+    except (TimeoutError, asyncio.CancelledError):
+        app.state.watch_task_handle.cancel()
 
 
 def create_app() -> FastAPI:
@@ -71,15 +93,19 @@ def create_app() -> FastAPI:
 
     from myvoice.api.compose import router as compose_router
     from myvoice.api.config import router as config_router
+    from myvoice.api.events import router as events_router
     from myvoice.api.jobs import router as jobs_router
     from myvoice.api.packs import router as packs_router
     from myvoice.api.rewrite import router as rewrite_router
+    from myvoice.api.samples import router as samples_router
 
     app.include_router(config_router)
     app.include_router(jobs_router)
     app.include_router(packs_router)
     app.include_router(rewrite_router)
     app.include_router(compose_router)
+    app.include_router(samples_router)
+    app.include_router(events_router)
 
     @app.get("/api/health")
     def health() -> dict[str, str]:
