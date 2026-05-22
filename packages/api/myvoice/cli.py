@@ -26,7 +26,7 @@ def serve(host: str, port: int, no_browser: bool, dev: bool) -> None:
     """Start the myvoice server."""
     click.echo(f"[myvoice] starting on http://{host}:{port}")
     if dev:
-        click.echo("[myvoice] dev mode: not serving frontend (expect Vite on :5173)")
+        click.echo("[myvoice] dev mode: not serving frontend (expect Vite on :7879)")
     if not no_browser and not dev:
         # Browser auto-open is added in a later phase when there's a frontend to open.
         pass
