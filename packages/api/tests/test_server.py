@@ -42,3 +42,22 @@ def test_root_returns_dev_message_when_static_missing(
     response = client.get("/")
     assert response.status_code == 200
     assert "dev mode" in response.text.lower()
+
+
+def test_myvoice_dev_forces_dev_message_even_when_static_present(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """MYVOICE_DEV=1 must force the dev placeholder even if static exists."""
+    static_dir = tmp_path / "static"
+    static_dir.mkdir()
+    (static_dir / "index.html").write_text("<html><body>built ui</body></html>")
+
+    monkeypatch.setenv("MYVOICE_STATIC_DIR", str(static_dir))
+    monkeypatch.setenv("MYVOICE_DEV", "1")
+    from myvoice.server import create_app
+
+    client = TestClient(create_app())
+    response = client.get("/")
+    assert response.status_code == 200
+    assert "dev mode" in response.text.lower()
+    assert "built ui" not in response.text

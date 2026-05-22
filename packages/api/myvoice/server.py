@@ -21,6 +21,11 @@ def _resolve_static_dir() -> Path:
     return Path(env) if env else _default_static_dir()
 
 
+def _is_dev_mode() -> bool:
+    """True when MYVOICE_DEV=1 — forces dev placeholder even if static exists."""
+    return os.environ.get("MYVOICE_DEV", "").lower() in ("1", "true", "yes")
+
+
 def create_app() -> FastAPI:
     """Build and return the FastAPI app."""
     app = FastAPI(title="myvoice", version=__version__)
@@ -32,7 +37,7 @@ def create_app() -> FastAPI:
     static_dir = _resolve_static_dir()
     index = static_dir / "index.html"
 
-    if index.is_file():
+    if index.is_file() and not _is_dev_mode():
         # Production mode: serve the built React app.
         @app.get("/", response_class=FileResponse)
         def root() -> FileResponse:
