@@ -103,7 +103,7 @@ def validate_pack(pack_root: Path) -> ValidationResult:
             ))
             continue
         if bio.max_chars is not None:
-            body = _strip_author_notes(p.read_text(encoding="utf-8"))
+            body = _extract_bio_body(p.read_text(encoding="utf-8"))
             body_len = len(body)
             if body_len > bio.max_chars:
                 msg = (
@@ -115,10 +115,19 @@ def validate_pack(pack_root: Path) -> ValidationResult:
     return ValidationResult(valid=(not errors), manifest=manifest, errors=errors)
 
 
-def _strip_author_notes(text: str) -> str:
-    """Drop italic-only meta lines (e.g. '*155 characters.*')."""
-    lines = [
-        line for line in text.splitlines()
-        if not (line.strip().startswith("*") and line.strip().endswith("*"))
-    ]
+def _extract_bio_body(text: str) -> str:
+    """Extract the bio body from a bios/*.md file.
+
+    The file contains: an H1 heading, blockquote(s) holding the bio body,
+    and optional italic-only meta lines (e.g. '*155 characters.*'). The
+    body is what the composer eventually emits — only the blockquote
+    content with the '> ' prefix stripped, joined by single newlines,
+    paragraphs separated by single blank lines.
+    """
+    lines: list[str] = []
+    for raw in text.splitlines():
+        if raw.startswith("> "):
+            lines.append(raw[2:])
+        elif raw.strip() == ">":
+            lines.append("")
     return "\n".join(lines).strip()

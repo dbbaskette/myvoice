@@ -93,3 +93,12 @@ def test_sample_without_blockquote_fails(tmp_path: Path) -> None:
     result = validate_pack(pack)
     assert result.valid is False
     assert any("blockquote" in e.message.lower() for e in result.errors)
+
+
+def test_packs_dan_is_valid() -> None:
+    """The reference Dan pack must always validate cleanly."""
+    repo_root = Path(__file__).resolve().parents[3]
+    result = validate_pack(repo_root / "packs" / "dan")
+    assert result.valid is True, "\n".join(
+        f"{e.path}: {e.message}" for e in result.errors
+    )
