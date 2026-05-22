@@ -2,6 +2,7 @@
 name = "myvoice"
 version = "0.1.0"
 description = "Local-first style-pack editor for AI-assisted writing"
+readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
 authors = [{ name = "Dan Baskette" }]
