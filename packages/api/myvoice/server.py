@@ -69,13 +69,17 @@ def create_app() -> FastAPI:
     """Build and return the FastAPI app."""
     app = FastAPI(title="myvoice", version=__version__, lifespan=_lifespan)
 
+    from myvoice.api.compose import router as compose_router
     from myvoice.api.config import router as config_router
     from myvoice.api.jobs import router as jobs_router
     from myvoice.api.packs import router as packs_router
+    from myvoice.api.rewrite import router as rewrite_router
 
     app.include_router(config_router)
     app.include_router(jobs_router)
     app.include_router(packs_router)
+    app.include_router(rewrite_router)
+    app.include_router(compose_router)
 
     @app.get("/api/health")
     def health() -> dict[str, str]:

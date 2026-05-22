@@ -1,6 +1,7 @@
 """Resolve a provider name + api key to an LLMProvider instance."""
 from __future__ import annotations
 
+import os
 from collections.abc import Callable
 
 from myvoice.llm.anthropic import AnthropicProvider
@@ -17,6 +18,9 @@ _FACTORIES: dict[str, Callable[[str], LLMProvider]] = {
 
 
 def get_provider(name: str, api_key: str) -> LLMProvider:
+    if os.environ.get("MYVOICE_TEST_PROVIDER") == "mock":
+        from myvoice.test_helpers.mock_provider import MockProvider
+        return MockProvider(api_key=api_key or "mock")
     if name not in _FACTORIES:
         raise ProviderError(f"Unknown provider: {name}")
     return _FACTORIES[name](api_key)
