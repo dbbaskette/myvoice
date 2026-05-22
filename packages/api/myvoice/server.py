@@ -58,6 +58,9 @@ def create_app() -> FastAPI:
     """Build and return the FastAPI app."""
     app = FastAPI(title="myvoice", version=__version__, lifespan=_lifespan)
 
+    from myvoice.api.packs import router as packs_router
+    app.include_router(packs_router)
+
     @app.get("/api/health")
     def health() -> dict[str, str]:
         return {"status": "ok", "version": __version__}

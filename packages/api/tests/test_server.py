@@ -87,3 +87,73 @@ def test_pack_store_loaded_into_app_state(tmp_path: Path, monkeypatch: pytest.Mo
         # Smoke a basic request still works
         r = client.get("/api/health")
         assert r.status_code == 200
+
+
+def _seed_packs(tmp_path: Path) -> Path:
+    """Write two minimal packs into tmp_path and return the root."""
+    for slug in ("alpha", "beta"):
+        pack = tmp_path / slug
+        pack.mkdir()
+        (pack / "stylepack.yaml").write_text(
+            f'spec_version: "1.0"\n'
+            f"pack:\n  slug: {slug}\n  name: {slug.title()}\n  version: '0.1'\n  author: t\n"
+            "persona:\n  identity: a\n  one_line: b\n"
+        )
+        (pack / "style-guide.md").write_text("body")
+    return tmp_path
+
+
+def test_list_packs_returns_summaries(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _seed_packs(tmp_path)
+    monkeypatch.setenv("MYVOICE_PACKS_ROOT", str(tmp_path))
+    from myvoice.server import create_app
+
+    with TestClient(create_app()) as client:
+        r = client.get("/api/packs")
+        assert r.status_code == 200
+        data = r.json()
+        slugs = sorted(p["slug"] for p in data)
+        assert slugs == ["alpha", "beta"]
+        for p in data:
+            assert p["valid"] is True
+            assert "name" in p and "version" in p
+
+
+def test_get_pack_returns_detail(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _seed_packs(tmp_path)
+    monkeypatch.setenv("MYVOICE_PACKS_ROOT", str(tmp_path))
+    from myvoice.server import create_app
+
+    with TestClient(create_app()) as client:
+        r = client.get("/api/packs/alpha")
+        assert r.status_code == 200
+        data = r.json()
+        assert data["slug"] == "alpha"
+        assert data["valid"] is True
+        assert data["persona"]["identity"] == "a"
+        assert data["counts"]["formats"] == 0
+
+
+def test_get_pack_404_for_unknown_slug(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _seed_packs(tmp_path)
+    monkeypatch.setenv("MYVOICE_PACKS_ROOT", str(tmp_path))
+    from myvoice.server import create_app
+
+    with TestClient(create_app()) as client:
+        r = client.get("/api/packs/ghost")
+        assert r.status_code == 404
+
+
+def test_get_manifest_returns_full_yaml_as_json(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _seed_packs(tmp_path)
+    monkeypatch.setenv("MYVOICE_PACKS_ROOT", str(tmp_path))
+    from myvoice.server import create_app
+
+    with TestClient(create_app()) as client:
+        r = client.get("/api/packs/alpha/manifest")
+        assert r.status_code == 200
+        data = r.json()
+        assert data["spec_version"] == "1.0"
+        assert data["pack"]["slug"] == "alpha"
