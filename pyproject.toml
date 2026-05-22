@@ -1,0 +1,51 @@
+[project]
+name = "myvoice"
+version = "0.1.0"
+description = "Local-first style-pack editor for AI-assisted writing"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Dan Baskette" }]
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+    "click>=8.1",
+    "pyyaml>=6.0",
+    "watchfiles>=0.24",
+    "httpx>=0.27",
+]
+
+[project.scripts]
+myvoice = "myvoice.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["packages/api/myvoice"]
+
+[tool.uv]
+dev-dependencies = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+    "ruff>=0.7",
+    "mypy>=1.13",
+    "types-pyyaml>=6.0",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "RUF"]
+
+[tool.mypy]
+strict = true
+python_version = "3.11"
+mypy_path = "packages/api"
+explicit_package_bases = true
+
+[tool.pytest.ini_options]
+testpaths = ["packages/api/tests"]
+asyncio_mode = "auto"
