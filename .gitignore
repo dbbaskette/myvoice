@@ -1,1 +1,27 @@
 .superpowers/
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+dist/
+build/
+*.egg-info/
+
+# Node
+node_modules/
+packages/web/dist/
+
+# TypeScript composite build outputs (from vite.config.ts type-checking)
+*.tsbuildinfo
+packages/web/vite.config.js
+packages/web/vite.config.d.ts
+
+# Backend-served frontend assets (built at release time)
+packages/api/myvoice/static/
+
+# OS
+.DS_Store
