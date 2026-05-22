@@ -11,6 +11,7 @@ from fastapi.staticfiles import StaticFiles
 
 from myvoice import __version__
 from myvoice.config import default_config_path, load_config
+from myvoice.jobs.registry import JobRegistry
 from myvoice.packs.store import PackStore
 
 
@@ -60,6 +61,7 @@ async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
     if not pack_roots and cfg.pack_paths:
         pack_roots = [Path(p) for p in cfg.pack_paths]
     app.state.pack_store = PackStore(pack_roots)
+    app.state.job_registry = JobRegistry()
     yield
 
 
@@ -68,9 +70,11 @@ def create_app() -> FastAPI:
     app = FastAPI(title="myvoice", version=__version__, lifespan=_lifespan)
 
     from myvoice.api.config import router as config_router
+    from myvoice.api.jobs import router as jobs_router
     from myvoice.api.packs import router as packs_router
 
     app.include_router(config_router)
+    app.include_router(jobs_router)
     app.include_router(packs_router)
 
     @app.get("/api/health")
