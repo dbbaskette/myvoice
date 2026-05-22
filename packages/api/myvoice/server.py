@@ -49,7 +49,7 @@ def create_app() -> FastAPI:
                 "<h1>myvoice — dev mode</h1>"
                 "<p>No built frontend found. Run <code>pnpm dev</code> "
                 "in <code>packages/web/</code> and visit "
-                "<a href='http://localhost:5173'>http://localhost:5173</a>.</p>"
+                "<a href='http://localhost:7879'>http://localhost:7879</a>.</p>"
                 "</body></html>"
             )
 
