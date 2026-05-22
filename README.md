@@ -27,7 +27,7 @@ uv run myvoice serve --dev
 cd packages/web && pnpm dev
 ```
 
-Open `http://localhost:5173`. Vite proxies `/api/*` to the FastAPI server on `:7878`.
+Open `http://localhost:7879`. Vite proxies `/api/*` to the FastAPI server on `:7878`.
 
 Common commands (from repo root):
 
