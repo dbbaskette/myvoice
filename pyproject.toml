@@ -21,6 +21,11 @@ myvoice = "myvoice.cli:main"
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+[tool.hatch.build]
+# Override gitignore for the build-output static dir so wheels include the
+# bundled React assets (filled by `make build`).
+artifacts = ["packages/api/myvoice/static/**/*"]
+
 [tool.hatch.build.targets.wheel]
 packages = ["packages/api/myvoice"]
 
