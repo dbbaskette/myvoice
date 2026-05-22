@@ -102,3 +102,12 @@ def test_packs_dan_is_valid() -> None:
     assert result.valid is True, "\n".join(
         f"{e.path}: {e.message}" for e in result.errors
     )
+
+
+def test_packs_template_is_valid() -> None:
+    """The _template pack must always validate cleanly — it's the scaffold."""
+    repo_root = Path(__file__).resolve().parents[3]
+    result = validate_pack(repo_root / "packs" / "_template")
+    assert result.valid is True, "\n".join(
+        f"{e.path}: {e.message}" for e in result.errors
+    )
