@@ -2,11 +2,9 @@
 
 Local-first style-pack editor for AI-assisted writing. Create, edit, and use portable writing-style packs that capture an author's voice (banished vocabulary, principles, samples, format add-ons, bios).
 
-> **Status:** Phase 2 (Style Pack Format & Core Tools). Pack format spec + Python compose/lint/validate + reference packs landed. Pack editing UI, AI extraction, and compose/test land in subsequent phases.
+> **Status:** Phases 1–5 shipped: pack format spec, CLI, browsable+editable pack UI, multi-provider compose & test, and pack create/manage flows. AI-assisted pack extraction from URLs and file uploads is the remaining v1 feature.
 
 ## Install
-
-### From source (current path — pre-PyPI)
 
 Builds the wheel and installs it into an isolated venv at `./local-venv/`:
 
@@ -25,15 +23,6 @@ Open `http://localhost:7878`.
 ```
 
 Requires `uv` and `pnpm` (`brew install uv pnpm`).
-
-### From PyPI (once published)
-
-```bash
-brew install pipx
-pipx ensurepath
-pipx install myvoice
-myvoice serve
-```
 
 ## Development
 
