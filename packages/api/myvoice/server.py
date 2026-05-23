@@ -110,11 +110,13 @@ def create_app() -> FastAPI:
     from myvoice.api.events import router as events_router
     from myvoice.api.jobs import router as jobs_router
     from myvoice.api.packs import router as packs_router
+    from myvoice.api.packs_admin import router as packs_admin_router
     from myvoice.api.rewrite import router as rewrite_router
     from myvoice.api.samples import router as samples_router
 
     app.include_router(config_router)
     app.include_router(jobs_router)
+    app.include_router(packs_admin_router)
     app.include_router(packs_router)
     app.include_router(rewrite_router)
     app.include_router(compose_router)

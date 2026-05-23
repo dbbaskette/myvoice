@@ -1,10 +1,22 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { PackList } from "../../src/components/PackList";
 
+// Minimal no-op EventSource stub — PackList uses useGlobalEvents which opens an
+// EventSource for /api/events. jsdom doesn't implement EventSource, so tests
+// would throw without this stub.
+class NoopEventSource {
+  onmessage: null = null;
+  onerror: null = null;
+  close(): void {}
+}
+
 describe("PackList", () => {
+  beforeEach(() => {
+    vi.stubGlobal("EventSource", NoopEventSource);
+  });
   afterEach(() => vi.unstubAllGlobals());
 
   it("shows loading state initially, then packs", async () => {

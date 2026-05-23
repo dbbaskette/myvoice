@@ -1,7 +1,9 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
 
 import { type PackSummary, listPacks } from "../api/packs";
+import { type GlobalEvent, useGlobalEvents } from "../hooks/useGlobalEvents";
+import { NewPackDialog } from "./packs/NewPackDialog";
 
 interface PackListProps {
   className?: string;
@@ -25,8 +27,9 @@ function badgeColor(slug: string): string {
 export function PackList({ className }: PackListProps): JSX.Element {
   const [packs, setPacks] = useState<PackSummary[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [newOpen, setNewOpen] = useState(false);
 
-  useEffect(() => {
+  const reload = useCallback(() => {
     const abort = new AbortController();
     listPacks({ signal: abort.signal })
       .then((data) => setPacks(data))
@@ -36,30 +39,31 @@ export function PackList({ className }: PackListProps): JSX.Element {
     return () => abort.abort();
   }, []);
 
-  if (error) {
-    return (
-      <div className={className}>
-        <p className="text-red-400 text-xs px-2 py-1">Error: {error}</p>
-      </div>
-    );
-  }
-  if (packs === null) {
-    return (
-      <div className={className}>
-        <p className="text-slate-500 text-xs px-2 py-1">Loading…</p>
-      </div>
-    );
-  }
-  if (packs.length === 0) {
-    return (
-      <div className={className}>
-        <p className="text-slate-500 text-xs px-2 py-1">No packs found.</p>
-      </div>
-    );
-  }
+  useEffect(() => reload(), [reload]);
+
+  const onEvent = useCallback(
+    (evt: GlobalEvent) => {
+      if (
+        evt.type === "pack:created" ||
+        evt.type === "pack:deleted" ||
+        evt.type === "pack:updated" ||
+        evt.type === "pack:invalid"
+      ) {
+        reload();
+      }
+    },
+    [reload],
+  );
+  useGlobalEvents(onEvent);
+
   return (
     <div className={className}>
-      {packs.map((p) => (
+      {error && <p className="text-red-400 text-xs px-2 py-1">Error: {error}</p>}
+      {packs === null && !error && <p className="text-slate-500 text-xs px-2 py-1">Loading…</p>}
+      {packs !== null && packs.length === 0 && (
+        <p className="text-slate-500 text-xs px-2 py-1">No packs found.</p>
+      )}
+      {packs?.map((p) => (
         <NavLink
           key={p.slug}
           to={`/packs/${encodeURIComponent(p.slug)}`}
@@ -82,6 +86,14 @@ export function PackList({ className }: PackListProps): JSX.Element {
           )}
         </NavLink>
       ))}
+      <button
+        type="button"
+        onClick={() => setNewOpen(true)}
+        className="mt-2 w-full px-2 py-2 text-sm border border-dashed border-slate-700 rounded text-slate-400 hover:text-slate-100 hover:border-slate-500"
+      >
+        + New pack
+      </button>
+      <NewPackDialog open={newOpen} onClose={() => setNewOpen(false)} />
     </div>
   );
 }
