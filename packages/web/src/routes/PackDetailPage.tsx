@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { NavLink, Navigate, Route, Routes, useParams } from "react-router-dom";
 
-import { type PackDetail, getManifest, getPack, getPackFile } from "../api/packs";
+import { type PackDetail, getManifest, getPack } from "../api/packs";
 import { MarkdownEditor } from "../components/MarkdownEditor";
 import { PackOverview } from "../components/PackOverview";
+import { ManifestForm } from "../components/manifest/ManifestForm";
 
 export function PackDetailPage(): JSX.Element {
   const { slug } = useParams<{ slug: string }>();
@@ -127,23 +128,8 @@ function BiosStub(): JSX.Element {
 
 function ManifestStub(): JSX.Element {
   const { slug } = useParams<{ slug: string }>();
-  const [text, setText] = useState<string | null>(null);
-  useEffect(() => {
-    if (!slug) return;
-    getPackFile(slug, "stylepack.yaml")
-      .then(setText)
-      .catch(() => setText("(error)"));
-  }, [slug]);
-  return (
-    <div className="p-6">
-      <p className="text-slate-400 text-sm mb-3">
-        Read-only YAML preview. Form editor lands in P3-T9.
-      </p>
-      <pre className="bg-slate-950 border border-slate-800 rounded p-4 text-xs text-slate-300 overflow-auto">
-        {text ?? "Loading…"}
-      </pre>
-    </div>
-  );
+  if (!slug) return <div />;
+  return <ManifestForm slug={slug} />;
 }
 
 function FileGroup({ category }: { category: "formats" | "samples" | "bios" }): JSX.Element {
