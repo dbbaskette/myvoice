@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 
 import { type Manifest, ManifestValidationError, putManifest } from "../../api/manifest";
 import { getManifest } from "../../api/packs";
+import { DeletePackDialog } from "../packs/DeletePackDialog";
 import { BanishedSection } from "./BanishedSection";
 import { EntriesSection } from "./EntriesSection";
 import { PackMetadataSection } from "./PackMetadataSection";
@@ -20,6 +21,7 @@ export function ManifestForm({ slug }: ManifestFormProps): JSX.Element {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [banner, setBanner] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   useEffect(() => {
     let aborted = false;
@@ -126,6 +128,22 @@ export function ManifestForm({ slug }: ManifestFormProps): JSX.Element {
         samplesCount={draft.samples.length}
         biosCount={draft.bios.length}
       />
+
+      <section className="space-y-3 pt-6 mt-6 border-t border-red-900/40">
+        <h2 className="text-base font-semibold text-red-300">Danger zone</h2>
+        <p className="text-slate-400 text-sm">
+          Move this pack to ~/.myvoice/trash/. The files remain on disk and can be restored
+          manually.
+        </p>
+        <button
+          type="button"
+          onClick={() => setDeleteOpen(true)}
+          className="px-3 py-1.5 text-sm border border-red-700 text-red-300 rounded hover:bg-red-900/30"
+        >
+          Delete pack
+        </button>
+      </section>
+      <DeletePackDialog slug={slug} open={deleteOpen} onClose={() => setDeleteOpen(false)} />
 
       {toast && (
         <div className="fixed bottom-4 right-4 bg-emerald-700 text-emerald-50 px-4 py-2 rounded shadow">
