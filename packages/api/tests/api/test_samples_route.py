@@ -6,6 +6,7 @@ mutate the checked-in fixture packs.
 from __future__ import annotations
 
 import shutil
+from collections.abc import Iterator
 from pathlib import Path
 
 import pytest
@@ -19,7 +20,7 @@ _DAN_PACK = _REPO_ROOT / "packs" / "dan"
 
 
 @pytest.fixture
-def samples_client(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+def samples_client(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[TestClient]:
     """TestClient with an isolated copy of packs/dan.
 
     Uses MYVOICE_PACKS_ROOT so no real pack dirs are touched.
@@ -34,7 +35,7 @@ def samples_client(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
         yield c
 
 
-def test_create_sample_appends_manifest_and_writes_file(samples_client) -> None:
+def test_create_sample_appends_manifest_and_writes_file(samples_client: TestClient) -> None:
     client = samples_client
     # Baseline manifest
     r0 = client.get("/api/packs/dan/manifest")
@@ -60,7 +61,7 @@ def test_create_sample_appends_manifest_and_writes_file(samples_client) -> None:
     assert len(r2.json()["samples"]) == sample_count + 1
 
 
-def test_sample_id_auto_increments(samples_client) -> None:
+def test_sample_id_auto_increments(samples_client: TestClient) -> None:
     client = samples_client
     r1 = client.post("/api/packs/dan/samples", json={"excerpt": "First sample passage."})
     r2 = client.post("/api/packs/dan/samples", json={"excerpt": "Second sample passage."})
@@ -69,13 +70,13 @@ def test_sample_id_auto_increments(samples_client) -> None:
     assert int(r1.json()["id"]) + 1 == int(r2.json()["id"])
 
 
-def test_create_sample_unknown_pack_returns_404(samples_client) -> None:
+def test_create_sample_unknown_pack_returns_404(samples_client: TestClient) -> None:
     client = samples_client
     r = client.post("/api/packs/no-such-pack/samples", json={"excerpt": "hi"})
     assert r.status_code == 404
 
 
-def test_create_sample_writes_blockquote_and_metadata(samples_client) -> None:
+def test_create_sample_writes_blockquote_and_metadata(samples_client: TestClient) -> None:
     client = samples_client
     r = client.post(
         "/api/packs/dan/samples",
@@ -97,7 +98,7 @@ def test_create_sample_writes_blockquote_and_metadata(samples_client) -> None:
     assert "> Builders build. Shippers ship." in content
 
 
-def test_create_sample_no_source_or_note(samples_client) -> None:
+def test_create_sample_no_source_or_note(samples_client: TestClient) -> None:
     client = samples_client
     r = client.post("/api/packs/dan/samples", json={"excerpt": "Plain excerpt only."})
     assert r.status_code == 201

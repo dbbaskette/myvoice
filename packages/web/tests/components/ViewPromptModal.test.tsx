@@ -34,9 +34,7 @@ describe("ViewPromptModal", () => {
   it("renders prompt fetched from API", async () => {
     render(<ViewPromptModal {...defaultProps} />);
     await waitFor(() =>
-      expect(
-        screen.getByText("You are Dan Baskette. Rewrite the following."),
-      ).toBeInTheDocument(),
+      expect(screen.getByText("You are Dan Baskette. Rewrite the following.")).toBeInTheDocument(),
     );
   });
 

@@ -2,9 +2,15 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
+
+import pytest
+from fastapi.testclient import TestClient
 
 
-def test_rewrite_with_mock_provider(client_with_config, monkeypatch) -> None:
+def test_rewrite_with_mock_provider(
+    client_with_config: tuple[TestClient, Path], monkeypatch: pytest.MonkeyPatch
+) -> None:
     client, _cfg_path = client_with_config
     # Set an API key (any string — mock provider ignores it)
     client.put("/api/config", json={"providers": {"anthropic": {"api_key": "sk-mock"}}})
@@ -38,7 +44,9 @@ def test_rewrite_with_mock_provider(client_with_config, monkeypatch) -> None:
         raise AssertionError("No complete event found in SSE stream")
 
 
-def test_rewrite_returns_404_for_unknown_pack(client_with_config, monkeypatch) -> None:
+def test_rewrite_returns_404_for_unknown_pack(
+    client_with_config: tuple[TestClient, Path], monkeypatch: pytest.MonkeyPatch
+) -> None:
     client, _ = client_with_config
     monkeypatch.setenv("MYVOICE_TEST_PROVIDER", "mock")
     r = client.post("/api/rewrite", json={
@@ -50,7 +58,7 @@ def test_rewrite_returns_404_for_unknown_pack(client_with_config, monkeypatch) -
     assert r.status_code == 404
 
 
-def test_rewrite_returns_400_when_no_api_key(client_with_config) -> None:
+def test_rewrite_returns_400_when_no_api_key(client_with_config: tuple[TestClient, Path]) -> None:
     client, _ = client_with_config
     # No API key set for anthropic
     r = client.post("/api/rewrite", json={

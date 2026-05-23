@@ -6,6 +6,7 @@ import pytest
 import respx
 
 from myvoice.llm.anthropic import AnthropicProvider
+from myvoice.llm.base import StreamChunk
 from myvoice.llm.exceptions import ProviderMissingKey, ProviderRateLimit
 
 
@@ -91,13 +92,14 @@ async def test_stream_yields_deltas_and_final_usage() -> None:
         )
     )
 
-    chunks: list = []
+    chunks: list[StreamChunk] = []
     async for c in provider.stream(model="claude-sonnet-4-6", prompt="Hi"):
         chunks.append(c)
 
     deltas = [c.delta for c in chunks if c.delta]
     assert "".join(deltas) == "Hello world"
     final = next(c for c in chunks if c.usage is not None)
+    assert final.usage is not None
     assert final.usage.input_tokens == 10
     assert final.usage.output_tokens == 2
     assert final.usage.finish_reason == "stop"

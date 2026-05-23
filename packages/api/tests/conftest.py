@@ -18,7 +18,9 @@ def client() -> Iterator[TestClient]:
 
 
 @pytest.fixture
-def client_with_config(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+def client_with_config(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> Iterator[tuple[TestClient, Path]]:
     """TestClient + isolated config file path. Yields (client, cfg_path)."""
     cfg_path = tmp_path / "config.yaml"
     monkeypatch.setenv("MYVOICE_CONFIG_PATH", str(cfg_path))
