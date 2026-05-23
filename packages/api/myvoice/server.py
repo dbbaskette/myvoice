@@ -34,12 +34,12 @@ def _is_dev_mode() -> bool:
 
 
 def _resolve_pack_roots() -> list[Path]:
-    """Where to scan for packs.
+    """Built-in pack roots from env + repo, not yet merged with config.
 
     Priority:
     1. MYVOICE_PACKS_ROOT env var (single path).
     2. Repo packs/ dir if it exists (dev/test mode).
-    3. Empty list (installed wheel; user packs come from Phase 4 config).
+    3. Empty list (installed wheel; user packs come from config).
     """
     env = os.environ.get("MYVOICE_PACKS_ROOT")
     if env:
@@ -51,6 +51,23 @@ def _resolve_pack_roots() -> list[Path]:
     return []
 
 
+def effective_pack_roots(config_pack_paths: list[str]) -> list[Path]:
+    """Merge built-in roots (env or repo) with the user's config pack_paths.
+
+    Built-in roots come first; config paths are appended in order, deduped
+    by resolved path. Single source of truth for both startup and the
+    rescan path triggered by PUT /api/config.
+    """
+    roots: list[Path] = list(_resolve_pack_roots())
+    seen = {p.resolve() for p in roots}
+    for p in config_pack_paths:
+        path = Path(p).expanduser()
+        if path.resolve() not in seen:
+            roots.append(path)
+            seen.add(path.resolve())
+    return roots
+
+
 @asynccontextmanager
 async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
     """Initialize config + PackStore + EventBus + watch task on startup."""
@@ -58,10 +75,7 @@ async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
     cfg = load_config(cfg_path)
     app.state.config = cfg
     app.state.config_path = cfg_path
-    # Merge config pack_paths with any env-specified roots (env takes priority).
-    pack_roots = _resolve_pack_roots()
-    if not pack_roots and cfg.pack_paths:
-        pack_roots = [Path(p) for p in cfg.pack_paths]
+    pack_roots = effective_pack_roots(cfg.pack_paths)
     app.state.pack_store = PackStore(pack_roots)
     app.state.job_registry = JobRegistry()
 

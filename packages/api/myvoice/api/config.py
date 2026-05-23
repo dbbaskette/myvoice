@@ -33,9 +33,12 @@ def put_config(request: Request, patch: dict[str, Any]) -> dict[str, Any]:
     incoming = patch.get("providers") or {}
     for name in incoming.keys():
         _MODEL_CACHE.pop(name, None)
-    # Trigger pack rescan if pack_paths changed.
-    if "pack_paths" in patch:
-        request.app.state.pack_store.rescan(new_cfg.pack_paths)
+    # Trigger pack rescan if pack_paths actually changed. The effective root
+    # list always includes env/repo built-ins; PUT must not strip them.
+    if "pack_paths" in patch and patch["pack_paths"] != cfg.pack_paths:
+        from myvoice.server import effective_pack_roots
+
+        request.app.state.pack_store.rescan(effective_pack_roots(new_cfg.pack_paths))
     return redact_config(new_cfg).model_dump()
 
 

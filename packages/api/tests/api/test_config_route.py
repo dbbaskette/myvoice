@@ -38,3 +38,25 @@ def test_put_empty_clears_key(client_with_config) -> None:
     import yaml
     data = yaml.safe_load(cfg_path.read_text())
     assert data["providers"]["anthropic"]["api_key"] == ""
+
+
+def test_put_with_empty_pack_paths_preserves_env_packs(client_with_config) -> None:
+    """Regression: saving Settings with no pack_paths edited must not wipe env-loaded packs.
+
+    The SettingsPage sends the whole config back on save, including
+    `pack_paths: []`. Before the fix, this triggered a rescan with empty roots
+    and the in-memory pack store lost the env/repo-loaded packs.
+    """
+    client, _ = client_with_config
+    slugs_before = sorted(client.app.state.pack_store.slugs())
+    assert slugs_before, "fixture should have loaded packs from the repo"
+    r = client.put(
+        "/api/config",
+        json={
+            "providers": {"anthropic": {"api_key": "sk-mock"}},
+            "pack_paths": [],
+        },
+    )
+    assert r.status_code == 200
+    slugs_after = sorted(client.app.state.pack_store.slugs())
+    assert slugs_after == slugs_before
