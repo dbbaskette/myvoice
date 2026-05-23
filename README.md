@@ -131,6 +131,10 @@ The repo ships two packs:
 - `packs/dan/` — Dan Baskette's voice, the reference pack (v3.0 from Dan-AI)
 - `packs/_template/` — empty scaffold; copy to start your own
 
+### Create from the UI
+
+Click **+ New pack** in the sidebar, fill in slug, name, author, and persona. The new pack is created from the bundled `_template/` and you land on its detail page ready to edit. Use the **Manifest** tab to edit banished words, rules, and persona; the **Danger zone** at the bottom soft-deletes the pack to `~/.myvoice/trash/`.
+
 ### CLI
 
 ```bash
