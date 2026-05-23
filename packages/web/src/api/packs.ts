@@ -47,3 +47,27 @@ export async function getPackFile(slug: string, path: string, init?: RequestInit
   }
   return response.text();
 }
+
+export interface CreatePackRequest {
+  slug: string;
+  name: string;
+  author: string;
+  persona_identity: string;
+  persona_one_line: string;
+  version?: string;
+  description?: string;
+}
+
+export async function createPack(req: CreatePackRequest): Promise<PackSummary> {
+  return apiFetch<PackSummary>("/api/packs", {
+    method: "POST",
+    body: JSON.stringify(req),
+  });
+}
+
+export async function deletePack(slug: string): Promise<void> {
+  const res = await fetch(`/api/packs/${encodeURIComponent(slug)}`, { method: "DELETE" });
+  if (!res.ok && res.status !== 204) {
+    throw new Error(`HTTP ${res.status} deleting pack ${slug}`);
+  }
+}
