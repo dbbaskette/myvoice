@@ -35,3 +35,14 @@ def resolve_write_root() -> Path:
     if env:
         return Path(env)
     return Path.home() / ".myvoice" / "packs"
+
+
+def resolve_trash_root() -> Path:
+    """Where soft-deleted packs go.
+
+    Uses ``<MYVOICE_PACKS_ROOT_parent>/trash`` if env var set, else ``~/.myvoice/trash/``.
+    """
+    env = os.environ.get("MYVOICE_PACKS_ROOT")
+    if env:
+        return Path(env).parent / "trash"
+    return Path.home() / ".myvoice" / "trash"

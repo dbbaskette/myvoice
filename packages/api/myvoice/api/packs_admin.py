@@ -2,13 +2,14 @@
 from __future__ import annotations
 
 import shutil
+from datetime import datetime, timezone
 from typing import Any
 
 import yaml
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, Field
 
-from myvoice.packs.templates import locate_template, resolve_write_root
+from myvoice.packs.templates import locate_template, resolve_trash_root, resolve_write_root
 from myvoice.validate import validate_pack
 
 router = APIRouter(prefix="/api/packs", tags=["packs-admin"])
@@ -116,3 +117,36 @@ async def create_pack(req: CreatePackRequest, request: Request) -> dict[str, Any
         "valid": info.valid,
         "error_count": len(info.errors),
     }
+
+
+@router.delete("/{slug}", status_code=204)
+async def delete_pack(slug: str, request: Request) -> None:
+    store = request.app.state.pack_store
+    info = store.get(slug)
+    if info is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "error": {
+                    "code": "pack_not_found",
+                    "message": f"No pack with slug '{slug}'.",
+                }
+            },
+        )
+
+    trash_root = resolve_trash_root()
+    trash_root.mkdir(parents=True, exist_ok=True)
+    ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")  # noqa: UP017
+    trash_target = trash_root / f"{ts}-{slug}"
+
+    try:
+        shutil.move(str(info.root_path), str(trash_target))
+    except OSError:
+        # Cross-device fallback
+        shutil.copytree(info.root_path, trash_target)
+        shutil.rmtree(info.root_path, ignore_errors=True)
+
+    store.rescan_one(slug)
+
+    bus = request.app.state.event_bus
+    await bus.emit({"type": "pack:deleted", "slug": slug})
