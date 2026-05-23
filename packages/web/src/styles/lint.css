@@ -1,0 +1,15 @@
+.lint-banished_word {
+  background-color: rgba(251, 146, 60, 0.4);
+}
+
+.lint-banished_phrase {
+  background-color: rgba(244, 114, 182, 0.4);
+}
+
+.lint-rule {
+  background-color: rgba(167, 139, 250, 0.4);
+}
+
+.lint-positive_hit {
+  background-color: rgba(74, 222, 128, 0.4);
+}

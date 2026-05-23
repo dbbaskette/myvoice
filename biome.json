@@ -6,7 +6,9 @@
       "**/node_modules",
       "**/.venv",
       "**/vite.config.js",
-      "**/vite.config.d.ts"
+      "**/vite.config.d.ts",
+      "**/test-results",
+      "**/playwright-report"
     ]
   },
   "organizeImports": { "enabled": true },

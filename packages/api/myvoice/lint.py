@@ -10,6 +10,8 @@ from myvoice.packs.manifest import Manifest
 
 Kind = Literal["word", "phrase", "rule"]
 
+LintKind = Literal["banished_word", "banished_phrase", "rule", "positive_hit"]
+
 
 @dataclass(frozen=True)
 class Violation:
@@ -18,6 +20,92 @@ class Violation:
     match: str
     line: int  # 1-indexed
     column: int  # 0-indexed byte offset on that line
+
+
+@dataclass(frozen=True)
+class LintHit:
+    """UTF-16-indexed hit. `start`/`end` match JavaScript String.length offsets."""
+
+    start: int
+    end: int
+    kind: LintKind
+    rule_id: str
+    message: str
+
+
+def _utf16_offset(text: str, char_index: int) -> int:
+    """Convert a Python char (code point) index to a UTF-16 code-unit offset."""
+    return sum(2 if ord(c) >= 0x10000 else 1 for c in text[:char_index])
+
+
+def lint_to_hits(manifest: Manifest, text: str) -> list[LintHit]:
+    """Run lint() and convert Violations to LintHit with UTF-16 offsets."""
+    hits: list[LintHit] = []
+    lines = text.splitlines(keepends=True)
+    line_starts: list[int] = [0]
+    for line in lines:
+        line_starts.append(line_starts[-1] + len(line))
+    _kind_map = {"word": "banished_word", "phrase": "banished_phrase", "rule": "rule"}
+    for v in lint(manifest, text):
+        line_start = line_starts[v.line - 1]
+        start_char = line_start + v.column
+        end_char = start_char + len(v.match)
+        hits.append(LintHit(
+            start=_utf16_offset(text, start_char),
+            end=_utf16_offset(text, end_char),
+            kind=_kind_map[v.kind],  # type: ignore[arg-type]
+            rule_id=f"{v.kind}:{v.match.lower()}",
+            message=v.message,
+        ))
+    return hits
+
+
+_CONFLICT_OPENERS = re.compile(
+    r"\b(for years|most teams struggle|the problem with|anyone who'?s|if you'?ve ever)\b",
+    re.IGNORECASE,
+)
+_S2V_TRIGGERS = re.compile(r"\b(unlock|powerhouse|tipping point|finally)\b", re.IGNORECASE)
+_S2V_TIME = re.compile(r"\b\d+\s*(?:minute|hour|day|week|x|\xd7|%)\b", re.IGNORECASE)
+_GOLDEN = re.compile(r"(?:^|\n)\s*((?:[A-Z][a-z]+\.\s*){3,4})", re.MULTILINE)
+
+
+def detect_positive_hits(text: str) -> list[LintHit]:
+    """Detect positive-voice heuristics and return LintHit list."""
+    hits: list[LintHit] = []
+
+    first_sentence_end = re.search(r"[.!?]", text)
+    first_segment = text[: first_sentence_end.end()] if first_sentence_end else text
+    for m in _CONFLICT_OPENERS.finditer(first_segment):
+        hits.append(LintHit(
+            start=_utf16_offset(text, m.start()),
+            end=_utf16_offset(text, m.end()),
+            kind="positive_hit",
+            rule_id="hit:conflict_opener",
+            message="Conflict & Resolution opener detected.",
+        ))
+
+    for m in _S2V_TRIGGERS.finditer(text):
+        window_start = max(0, m.start() - 80)
+        window_end = min(len(text), m.end() + 80)
+        if _S2V_TIME.search(text[window_start:window_end]):
+            hits.append(LintHit(
+                start=_utf16_offset(text, m.start()),
+                end=_utf16_offset(text, m.end()),
+                kind="positive_hit",
+                rule_id="hit:speed_to_value",
+                message="Speed-to-Value vocabulary near a time/effort claim.",
+            ))
+
+    for m in _GOLDEN.finditer(text):
+        hits.append(LintHit(
+            start=_utf16_offset(text, m.start(1)),
+            end=_utf16_offset(text, m.end(1)),
+            kind="positive_hit",
+            rule_id="hit:golden_command",
+            message="Golden Command pattern.",
+        ))
+
+    return hits
 
 
 def lint(manifest: Manifest, text: str) -> list[Violation]:

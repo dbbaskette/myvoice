@@ -82,6 +82,40 @@ myvoice/
 └── docs/           Design and implementation plans
 ```
 
+## Compose & test
+
+The **Compose & test** page lets you paste a draft, stream a rewrite in the pack author's voice, and optionally save the output as a new voice sample.
+
+### Quick start
+
+1. **Add an API key.** Go to **Settings** (⚙ in the sidebar) and paste your key under API keys. Three providers are supported:
+   - **Anthropic** — Claude Opus, Sonnet, Haiku
+   - **OpenAI** — GPT-5, GPT-5 Mini
+   - **Google** — Gemini 2.5 Pro, Gemini 2.5 Flash
+
+2. **Open Compose & test** (🔁 in the sidebar).
+
+3. **Select a pack, provider, and model** using the controls bar at the top.
+
+4. **Paste your draft** into the left pane.
+
+5. Click **Rewrite**. The right pane streams the rewritten text in real time. Lint highlights appear on both sides once the rewrite is complete — green for positive voice hits, orange/pink/purple for banished vocabulary and rule violations.
+
+6. Click **Save as sample** to append the output directly to the pack's `samples/` directory as a new voice exemplar.
+
+Other controls:
+- **View prompt** — inspect the assembled system prompt before sending.
+- **Diff** — toggle a side-by-side diff of the original vs. the rewrite.
+- **Copy** — copy the output to the clipboard.
+
+### Supported providers
+
+| Provider | Env var | Notes |
+|---|---|---|
+| Anthropic | API key in Settings | Claude 3 and Claude 4 families |
+| OpenAI | API key in Settings | GPT-5 and later |
+| Google | API key in Settings | Gemini 2.5 Pro / Flash |
+
 ## Style packs
 
 A **style pack** is a portable directory that captures a writer's voice. It conforms to [SPEC.md](./SPEC.md) v1.0. Each pack contains:
