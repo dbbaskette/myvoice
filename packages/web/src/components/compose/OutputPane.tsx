@@ -1,5 +1,8 @@
+import { useState } from "react";
 import type { ReactNode } from "react";
 import type { LintHit } from "../../api/compose";
+import { DiffView } from "./DiffView";
+import { SaveSampleDialog } from "./SaveSampleDialog";
 
 interface OutputPaneProps {
   output: string;
@@ -7,6 +10,8 @@ interface OutputPaneProps {
   streaming: boolean;
   error: { message: string; hint?: string } | null;
   packSlug: string;
+  draft: string;
+  onToast: (msg: string) => void;
 }
 
 function renderWithHighlights(text: string, hits: LintHit[]): ReactNode {
@@ -29,26 +34,67 @@ function renderWithHighlights(text: string, hits: LintHit[]): ReactNode {
   return out;
 }
 
-export function OutputPane({ output, hits, streaming, error }: OutputPaneProps): JSX.Element {
+export function OutputPane({
+  output,
+  hits,
+  streaming,
+  error,
+  packSlug,
+  draft,
+  onToast,
+}: OutputPaneProps): JSX.Element {
+  const [diffOn, setDiffOn] = useState(false);
+  const [showSave, setShowSave] = useState(false);
+
   const handleCopy = () => {
     if (output) {
       navigator.clipboard.writeText(output).catch(() => {});
     }
   };
 
+  const handleSaved = (id: string) => {
+    setShowSave(false);
+    onToast(`Saved as sample ${id}.`);
+  };
+
+  const canSave = output.length > 0 && !streaming;
+
   return (
     <div className="flex-1 flex flex-col min-w-0">
       <div className="px-3 py-1.5 text-xs text-slate-500 border-b border-slate-800 bg-slate-950 flex items-center justify-between">
         <span>Output</span>
         {output && !streaming && (
-          <button
-            type="button"
-            onClick={handleCopy}
-            className="px-2 py-0.5 text-xs border border-slate-700 rounded text-slate-300
-              hover:bg-slate-800"
-          >
-            Copy
-          </button>
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => setDiffOn((d) => !d)}
+              className={`px-2 py-0.5 text-xs border rounded ${
+                diffOn
+                  ? "border-emerald-600 text-emerald-400 bg-emerald-950"
+                  : "border-slate-700 text-slate-300 hover:bg-slate-800"
+              }`}
+              title="Toggle diff view"
+            >
+              Diff
+            </button>
+            <button
+              type="button"
+              onClick={handleCopy}
+              className="px-2 py-0.5 text-xs border border-slate-700 rounded text-slate-300
+                hover:bg-slate-800"
+            >
+              Copy
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowSave(true)}
+              disabled={!canSave}
+              className="px-2 py-0.5 text-xs border border-slate-700 rounded text-slate-300
+                hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              Save as sample
+            </button>
+          </div>
         )}
       </div>
 
@@ -61,15 +107,28 @@ export function OutputPane({ output, hits, streaming, error }: OutputPaneProps):
 
       <div className="flex-1 overflow-auto">
         {output ? (
-          <pre className="p-3 text-sm text-slate-100 font-mono leading-relaxed whitespace-pre-wrap break-words min-h-full output-pane">
-            {streaming ? output : renderWithHighlights(output, hits)}
-          </pre>
+          diffOn && !streaming ? (
+            <DiffView oldValue={draft} newValue={output} />
+          ) : (
+            <pre className="p-3 text-sm text-slate-100 font-mono leading-relaxed whitespace-pre-wrap break-words min-h-full output-pane">
+              {streaming ? output : renderWithHighlights(output, hits)}
+            </pre>
+          )
         ) : !error ? (
           <div className="p-3 text-sm text-slate-600 italic">
             {streaming ? "Streaming…" : "Rewritten output will appear here."}
           </div>
         ) : null}
       </div>
+
+      {showSave && (
+        <SaveSampleDialog
+          packSlug={packSlug}
+          initialExcerpt={output}
+          onSaved={handleSaved}
+          onClose={() => setShowSave(false)}
+        />
+      )}
     </div>
   );
 }

@@ -25,7 +25,14 @@ export function ComposePage(): JSX.Element {
   const [jobId, setJobId] = useState<string | null>(null);
   const [receipt, setReceipt] = useState<ReceiptData | null>(null);
   const [error, setError] = useState<{ message: string; hint?: string } | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
   const rewriteStartRef = useRef<number | null>(null);
+
+  const showToast = useCallback((msg: string) => {
+    setToast(msg);
+    const t = setTimeout(() => setToast(null), 3000);
+    return () => clearTimeout(t);
+  }, []);
 
   // Load pack list
   useEffect(() => {
@@ -119,11 +126,12 @@ export function ComposePage(): JSX.Element {
   }
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col relative">
       <ControlsBar
         controls={controls}
         setControls={setControls}
         packs={packs}
+        draft={draft}
         onRewrite={onRewrite}
         running={jobId !== null}
       />
@@ -135,9 +143,17 @@ export function ComposePage(): JSX.Element {
           streaming={jobId !== null}
           error={error}
           packSlug={controls.pack}
+          draft={draft}
+          onToast={showToast}
         />
       </div>
       {receipt && <Receipt receipt={receipt} />}
+
+      {toast && (
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2 bg-emerald-800 text-emerald-100 text-sm rounded shadow-lg">
+          {toast}
+        </div>
+      )}
     </div>
   );
 }

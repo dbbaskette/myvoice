@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { Config, ModelInfo } from "../../api/config";
 import { getConfig, listModels } from "../../api/config";
 import type { PackSummary } from "../../api/packs";
+import { ViewPromptModal } from "./ViewPromptModal";
 
 export interface ComposeControls {
   pack: string;
@@ -15,6 +16,7 @@ interface ControlsBarProps {
   controls: ComposeControls;
   setControls: (c: ComposeControls) => void;
   packs: PackSummary[];
+  draft: string;
   onRewrite: () => void;
   running: boolean;
 }
@@ -31,12 +33,14 @@ export function ControlsBar({
   controls,
   setControls,
   packs,
+  draft,
   onRewrite,
   running,
 }: ControlsBarProps): JSX.Element {
   const [config, setConfig] = useState<Config | null>(null);
   const [models, setModels] = useState<ModelInfo[]>([]);
   const [loadingModels, setLoadingModels] = useState(false);
+  const [showPrompt, setShowPrompt] = useState(false);
   // Use a ref to avoid re-running config load when controls changes
   const initializedRef = useRef(false);
   const controlsRef = useRef(controls);
@@ -158,7 +162,16 @@ export function ControlsBar({
         </select>
       </label>
 
-      <div className="ml-auto">
+      <div className="ml-auto flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setShowPrompt(true)}
+          disabled={!controls.pack}
+          className="px-3 py-1.5 text-sm border border-slate-700 rounded text-slate-300
+            hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          View prompt
+        </button>
         <button
           type="button"
           onClick={onRewrite}
@@ -169,6 +182,16 @@ export function ControlsBar({
           {running ? "Rewriting…" : "Rewrite"}
         </button>
       </div>
+
+      {showPrompt && (
+        <ViewPromptModal
+          pack={controls.pack}
+          format={controls.format ?? undefined}
+          samples={controls.samples}
+          draft={draft}
+          onClose={() => setShowPrompt(false)}
+        />
+      )}
     </div>
   );
 }
