@@ -107,6 +107,7 @@ def create_app() -> FastAPI:
 
     from myvoice.api.compose import router as compose_router
     from myvoice.api.config import router as config_router
+    from myvoice.api.entries import router as entries_router
     from myvoice.api.events import router as events_router
     from myvoice.api.extract import router as extract_router
     from myvoice.api.jobs import router as jobs_router
@@ -122,6 +123,7 @@ def create_app() -> FastAPI:
     app.include_router(rewrite_router)
     app.include_router(compose_router)
     app.include_router(samples_router)
+    app.include_router(entries_router)
     app.include_router(events_router)
     app.include_router(extract_router)
 
