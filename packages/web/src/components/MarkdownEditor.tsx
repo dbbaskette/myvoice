@@ -11,11 +11,12 @@ import { getPackFile } from "../api/packs";
 interface MarkdownEditorProps {
   slug: string;
   path: string;
+  onDelete?: () => void; // when provided, renders a Delete button in the header
 }
 
 type Mode = "rich" | "raw";
 
-export function MarkdownEditor({ slug, path }: MarkdownEditorProps): JSX.Element {
+export function MarkdownEditor({ slug, path, onDelete }: MarkdownEditorProps): JSX.Element {
   const [initial, setInitial] = useState<string | null>(null);
   const [raw, setRaw] = useState<string>("");
   const [mode, setMode] = useState<Mode>("rich");
@@ -144,6 +145,15 @@ export function MarkdownEditor({ slug, path }: MarkdownEditorProps): JSX.Element
             Raw
           </button>
         </div>
+        {onDelete && (
+          <button
+            type="button"
+            onClick={onDelete}
+            className="px-3 py-1 text-xs rounded border border-red-700 text-red-300 hover:bg-red-900/30"
+          >
+            Delete
+          </button>
+        )}
         <button
           type="button"
           onClick={handleSave}

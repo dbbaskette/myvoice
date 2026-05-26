@@ -1,10 +1,14 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { NavLink, Navigate, Route, Routes, useParams } from "react-router-dom";
 
+import type { EntryKind } from "../api/entries";
 import { type PackDetail, getManifest, getPack } from "../api/packs";
 import { MarkdownEditor } from "../components/MarkdownEditor";
 import { PackOverview } from "../components/PackOverview";
+import { DeleteEntryDialog } from "../components/manifest/DeleteEntryDialog";
 import { ManifestForm } from "../components/manifest/ManifestForm";
+import { NewEntryDialog } from "../components/manifest/NewEntryDialog";
+import { useGlobalEvents } from "../hooks/useGlobalEvents";
 
 export function PackDetailPage(): JSX.Element {
   const { slug } = useParams<{ slug: string }>();
@@ -132,53 +136,125 @@ function ManifestStub(): JSX.Element {
   return <ManifestForm slug={slug} />;
 }
 
-function FileGroup({ category }: { category: "formats" | "samples" | "bios" }): JSX.Element {
+function FileGroup({ category }: { category: EntryKind }): JSX.Element {
   const { slug } = useParams<{ slug: string }>();
   const [manifest, setManifest] = useState<Record<string, unknown> | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
+  const [newOpen, setNewOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+
+  const reload = useCallback(
+    (preferSelected?: string | null): void => {
+      if (!slug) return;
+      void getManifest(slug).then((m) => {
+        setManifest(m);
+        const entries = (m[category] as Array<{ file: string }> | undefined) ?? [];
+        if (preferSelected && entries.some((e) => e.file === preferSelected)) {
+          setSelected(preferSelected);
+        } else if (entries.length > 0) {
+          // Keep previous selection if still present; else fall back to first.
+          setSelected((prev) =>
+            prev && entries.some((e) => e.file === prev) ? prev : entries[0].file,
+          );
+        } else {
+          setSelected(null);
+        }
+      });
+    },
+    [slug, category],
+  );
 
   useEffect(() => {
     if (!slug) return;
-    getManifest(slug).then((m) => {
-      setManifest(m);
-      const entries = (m[category] as Array<{ file: string }> | undefined) ?? [];
-      if (entries.length > 0) setSelected(entries[0].file);
-    });
-  }, [slug, category]);
+    reload();
+  }, [slug, reload]);
+
+  // Live refresh on pack:updated events for this slug.
+  useGlobalEvents(
+    useCallback(
+      (evt) => {
+        if (evt.type === "pack:updated" && evt.slug === slug) reload(selected);
+      },
+      [slug, selected, reload],
+    ),
+  );
 
   if (!slug) return <div />;
   if (manifest === null) return <div className="p-6 text-slate-500">Loading…</div>;
   const entries = (manifest[category] as Array<{ name?: string; id?: string; file: string }>) ?? [];
-  if (entries.length === 0) {
-    return <div className="p-6 text-slate-400">No {category} in this pack.</div>;
-  }
+
+  // Find the entry's identity (name for formats/bios, id for samples) for the selected file.
+  const selectedEntry = entries.find((e) => e.file === selected);
+  const selectedIdent = category === "samples" ? selectedEntry?.id : selectedEntry?.name;
 
   return (
     <div className="flex h-full">
-      <ul className="w-[220px] shrink-0 border-r border-slate-800 overflow-y-auto bg-slate-950/30">
-        {entries.map((e) => (
-          <li key={e.file}>
-            <button
-              type="button"
-              onClick={() => setSelected(e.file)}
-              className={`w-full text-left px-4 py-2 text-sm ${
-                selected === e.file
-                  ? "bg-slate-800 text-slate-100"
-                  : "text-slate-300 hover:bg-slate-800/40"
-              }`}
-            >
-              {e.name ?? e.id ?? e.file}
-            </button>
-          </li>
-        ))}
-      </ul>
+      <div className="w-[220px] shrink-0 flex flex-col border-r border-slate-800 bg-slate-950/30">
+        <ul className="flex-1 overflow-y-auto">
+          {entries.length === 0 ? (
+            <li className="p-4 text-slate-500 text-xs">No {category} yet.</li>
+          ) : (
+            entries.map((e) => (
+              <li key={e.file}>
+                <button
+                  type="button"
+                  onClick={() => setSelected(e.file)}
+                  className={`w-full text-left px-4 py-2 text-sm ${
+                    selected === e.file
+                      ? "bg-slate-800 text-slate-100"
+                      : "text-slate-300 hover:bg-slate-800/40"
+                  }`}
+                >
+                  {e.name ?? e.id ?? e.file}
+                </button>
+              </li>
+            ))
+          )}
+        </ul>
+        <div className="border-t border-slate-800 p-2">
+          <button
+            type="button"
+            onClick={() => setNewOpen(true)}
+            className="w-full px-2 py-1.5 text-sm border border-dashed border-slate-700 rounded text-slate-400 hover:text-slate-100 hover:border-slate-500"
+          >
+            + New {category.slice(0, -1)}
+          </button>
+        </div>
+      </div>
       <div className="flex-1 min-w-0">
         {selected ? (
-          <MarkdownEditor slug={slug} path={selected} />
+          <MarkdownEditor
+            slug={slug}
+            path={selected}
+            onDelete={selectedIdent ? () => setDeleteOpen(true) : undefined}
+          />
         ) : (
-          <div className="p-6 text-slate-500">Select a file</div>
+          <div className="p-6 text-slate-500">
+            No file selected. Click &quot;+ New {category.slice(0, -1)}&quot; to add one.
+          </div>
         )}
       </div>
+      <NewEntryDialog
+        slug={slug}
+        kind={category}
+        open={newOpen}
+        onClose={() => setNewOpen(false)}
+        onCreated={(file) => reload(file)}
+      />
+      {selectedIdent && selected && (
+        <DeleteEntryDialog
+          slug={slug}
+          kind={category}
+          ident={selectedIdent}
+          label={selected}
+          open={deleteOpen}
+          onClose={() => setDeleteOpen(false)}
+          onDeleted={() => {
+            setSelected(null);
+            reload();
+          }}
+        />
+      )}
     </div>
   );
 }
