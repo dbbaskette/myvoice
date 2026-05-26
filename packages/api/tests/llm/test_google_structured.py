@@ -20,7 +20,10 @@ _SIMPLE_SCHEMA = {
 
 
 def test_to_google_schema_drops_metadata() -> None:
-    src: dict[str, object] = {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object"}
+    src: dict[str, object] = {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+    }
     out = to_google_schema(src)
     assert "$schema" not in out
     assert out["type"] == "object"
