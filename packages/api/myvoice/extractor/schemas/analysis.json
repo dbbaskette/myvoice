@@ -1,0 +1,150 @@
+{
+  "$defs": {
+    "BanishedPhrase": {
+      "properties": {
+        "phrase": {
+          "title": "Phrase",
+          "type": "string"
+        },
+        "frequency": {
+          "default": 0,
+          "title": "Frequency",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "phrase"
+      ],
+      "title": "BanishedPhrase",
+      "type": "object"
+    },
+    "BanishedWord": {
+      "properties": {
+        "word": {
+          "title": "Word",
+          "type": "string"
+        },
+        "frequency": {
+          "default": 0,
+          "title": "Frequency",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "word"
+      ],
+      "title": "BanishedWord",
+      "type": "object"
+    },
+    "PermittedExceptionProposal": {
+      "properties": {
+        "term": {
+          "title": "Term",
+          "type": "string"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "term",
+        "reason"
+      ],
+      "title": "PermittedExceptionProposal",
+      "type": "object"
+    },
+    "ProposedSample": {
+      "properties": {
+        "excerpt": {
+          "title": "Excerpt",
+          "type": "string"
+        },
+        "source_location": {
+          "default": "",
+          "title": "Source Location",
+          "type": "string"
+        },
+        "why": {
+          "default": "",
+          "title": "Why",
+          "type": "string"
+        },
+        "rank": {
+          "default": 99,
+          "title": "Rank",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "excerpt"
+      ],
+      "title": "ProposedSample",
+      "type": "object"
+    }
+  },
+  "description": "Strict JSON returned by the LLM.",
+  "properties": {
+    "persona_identity": {
+      "title": "Persona Identity",
+      "type": "string"
+    },
+    "persona_one_line": {
+      "title": "Persona One Line",
+      "type": "string"
+    },
+    "banished_words": {
+      "items": {
+        "$ref": "#/$defs/BanishedWord"
+      },
+      "title": "Banished Words",
+      "type": "array"
+    },
+    "banished_phrases": {
+      "items": {
+        "$ref": "#/$defs/BanishedPhrase"
+      },
+      "title": "Banished Phrases",
+      "type": "array"
+    },
+    "permitted_exceptions": {
+      "items": {
+        "$ref": "#/$defs/PermittedExceptionProposal"
+      },
+      "title": "Permitted Exceptions",
+      "type": "array"
+    },
+    "style_guide_markdown": {
+      "default": "",
+      "title": "Style Guide Markdown",
+      "type": "string"
+    },
+    "samples": {
+      "items": {
+        "$ref": "#/$defs/ProposedSample"
+      },
+      "title": "Samples",
+      "type": "array"
+    },
+    "pop_culture_allowed": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Pop Culture Allowed",
+      "type": "array"
+    },
+    "pop_culture_banned": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Pop Culture Banned",
+      "type": "array"
+    }
+  },
+  "required": [
+    "persona_identity",
+    "persona_one_line"
+  ],
+  "title": "AnalysisResult",
+  "type": "object"
+}

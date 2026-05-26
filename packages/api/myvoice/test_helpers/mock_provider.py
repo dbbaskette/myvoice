@@ -12,7 +12,7 @@ class MockProvider:
     name = "mock"
 
     def __init__(self, api_key: str = "mock") -> None:
-        self._script = os.environ.get("MYVOICE_MOCK_OUTPUT", "Hello from the mock.")
+        pass  # env vars are read per-call so monkeypatching takes effect after construction
 
     async def list_models(self) -> list[ModelInfo]:
         return [
@@ -22,20 +22,25 @@ class MockProvider:
     async def complete(
         self, *, model: str, prompt: str, json_schema: dict[str, object] | None = None
     ) -> LLMResponse:
+        # Read env vars here (not in __init__) so per-test monkeypatching takes effect.
+        json_output = os.environ.get("MYVOICE_MOCK_OUTPUT_JSON")
+        text_output = os.environ.get("MYVOICE_MOCK_OUTPUT", "Hello from the mock.")
+        text = json_output if (json_schema is not None and json_output) else text_output
         return LLMResponse(
-            text=self._script,
+            text=text,
             input_tokens=len(prompt.split()),
-            output_tokens=len(self._script.split()),
+            output_tokens=len(text.split()),
             model=model,
             finish_reason="stop",
         )
 
     async def stream(self, *, model: str, prompt: str) -> AsyncIterator[StreamChunk]:
-        for chunk in self._script.split(" "):
+        text = os.environ.get("MYVOICE_MOCK_OUTPUT", "Hello from the mock.")
+        for chunk in text.split(" "):
             await asyncio.sleep(0.005)
             yield StreamChunk(delta=chunk + " ")
         yield StreamChunk(usage=Usage(
             input_tokens=len(prompt.split()),
-            output_tokens=len(self._script.split()),
+            output_tokens=len(text.split()),
             finish_reason="stop",
         ))
