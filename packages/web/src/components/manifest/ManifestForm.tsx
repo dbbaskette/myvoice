@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { type Manifest, ManifestValidationError, putManifest } from "../../api/manifest";
+import { exportPackUrl } from "../../api/pack_zip";
 import { getManifest } from "../../api/packs";
 import { DeletePackDialog } from "../packs/DeletePackDialog";
 import { BanishedSection } from "./BanishedSection";
@@ -128,6 +129,20 @@ export function ManifestForm({ slug }: ManifestFormProps): JSX.Element {
         samplesCount={draft.samples.length}
         biosCount={draft.bios.length}
       />
+
+      <section className="space-y-3 pt-6 mt-6 border-t border-slate-800">
+        <h2 className="text-base font-semibold text-slate-100">Distribute</h2>
+        <p className="text-slate-400 text-sm">
+          Export this pack as a .zip you can share or re-import elsewhere.
+        </p>
+        <a
+          href={exportPackUrl(slug)}
+          download
+          className="inline-block px-3 py-1.5 text-sm border border-slate-700 text-slate-300 rounded hover:bg-slate-800"
+        >
+          Export pack as .zip
+        </a>
+      </section>
 
       <section className="space-y-3 pt-6 mt-6 border-t border-red-900/40">
         <h2 className="text-base font-semibold text-red-300">Danger zone</h2>
