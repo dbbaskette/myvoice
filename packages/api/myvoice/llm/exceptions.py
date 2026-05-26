@@ -11,6 +11,10 @@ class ProviderError(Exception):
         self.message = message
         self.hint = hint
 
+    def _with_code(self, code: str) -> ProviderError:
+        self.code = code
+        return self
+
 
 class ProviderMissingKey(ProviderError):
     code = "provider_missing_key"
