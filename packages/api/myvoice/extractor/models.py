@@ -19,3 +19,14 @@ class FetchedDoc(BaseModel):
     source: Source
     content_type: str = "text/html"
     raw_bytes: bytes = b""
+
+
+class UploadedFile(BaseModel):
+    name: str
+    content_type: str
+    raw_bytes: bytes
+
+
+class CleanedDoc(BaseModel):
+    source: Source
+    text: str
