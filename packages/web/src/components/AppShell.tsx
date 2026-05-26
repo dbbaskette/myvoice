@@ -19,9 +19,7 @@ export function AppShell({ children }: AppShellProps): JSX.Element {
 
         <nav className="px-2 py-2 flex flex-col gap-0.5">
           <SidebarLink to="/packs">📚 Packs</SidebarLink>
-          <SidebarLink to="/extract" disabled>
-            ✨ Extract from URLs
-          </SidebarLink>
+          <SidebarLink to="/extract">✨ Extract from URLs</SidebarLink>
           <SidebarLink to="/compose">🔁 Compose &amp; test</SidebarLink>
           <SidebarLink to="/settings">⚙ Settings</SidebarLink>
         </nav>
