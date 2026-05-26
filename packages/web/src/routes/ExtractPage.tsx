@@ -4,6 +4,7 @@ import { type Config, getConfig } from "../api/config";
 import { type PackProposal, startExtract } from "../api/extract";
 import { Step1Inputs, type Step1State } from "../components/extract/Step1Inputs";
 import { Step2Progress } from "../components/extract/Step2Progress";
+import { Step3Review } from "../components/extract/Step3Review";
 import { useExtractJob } from "../hooks/useExtractJob";
 
 type Step = 1 | 2 | 3;
@@ -128,19 +129,11 @@ export function ExtractPage(): JSX.Element {
         />
       )}
       {step === 3 && proposal && (
-        <div className="text-slate-300">
-          <p>Step 3 review UI lands in Task 8.</p>
-          <pre className="text-xs bg-slate-950 p-3 rounded mt-3 max-w-3xl overflow-auto">
-            {JSON.stringify(proposal.analysis, null, 2)}
-          </pre>
-          <button
-            type="button"
-            onClick={backToStep1}
-            className="mt-3 px-3 py-1.5 text-sm border border-slate-700 rounded text-slate-300 hover:bg-slate-800"
-          >
-            Back to Step 1
-          </button>
-        </div>
+        <Step3Review
+          proposal={proposal}
+          packMeta={{ slug: state.slug, name: state.name, author: state.author }}
+          onBack={backToStep1}
+        />
       )}
     </div>
   );
