@@ -149,6 +149,43 @@ myvoice pack lint packs/dan draft.md
 myvoice pack compose packs/dan --bio linkedin-about
 ```
 
+## Using myvoice as a library
+
+Other Python apps can consume packs by importing from `myvoice` directly:
+
+```python
+from pathlib import Path
+from myvoice import PackStore, compose_prompt, lint, validate_pack
+
+# Discover packs from one or more roots
+store = PackStore([Path("~/.myvoice/packs").expanduser()])
+
+# List + look up a pack
+for slug in store.slugs():
+    info = store.get(slug)
+    print(slug, info.valid)
+
+dan = store.get("dan")
+
+# Compose a prompt for the LLM
+prompt = compose_prompt(
+    dan.root_path,
+    format="blog-post",
+    samples=["01"],
+    draft="My rough draft text…",
+)
+
+# Lint a draft against the pack
+result = validate_pack(dan.root_path)
+violations = lint(result.manifest, "Let me delve into this.")
+for v in violations:
+    print(v.kind, v.match, v.message)
+```
+
+The names exported from `myvoice/__init__.py` (`PackStore`, `Manifest`, `compose_prompt`, `lint`, `lint_to_hits`, `detect_positive_hits`, `validate_pack`, `Violation`, `LintHit`, `__version__`) are the public API. Anything else is private and may change without notice.
+
+Install via `pipx install myvoice` (CLI + library) or `pip install myvoice` (library only inside a project venv).
+
 ## Design
 
 See `docs/superpowers/specs/2026-05-22-myvoice-design.md` for the full design.
