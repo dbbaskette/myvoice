@@ -34,6 +34,8 @@ const serveBin = `${REPO}/.venv/bin/myvoice`;
 export default defineConfig({
   testDir: "./e2e",
   timeout: 30_000,
+  // Tests share a single backend server with mutable pack state; run serially to avoid interference.
+  workers: 1,
   use: { baseURL: "http://127.0.0.1:7879", trace: "on-first-retry" },
   webServer: [
     {
