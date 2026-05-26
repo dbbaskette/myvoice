@@ -3,6 +3,7 @@ import { NavLink } from "react-router-dom";
 
 import { type PackSummary, listPacks } from "../api/packs";
 import { type GlobalEvent, useGlobalEvents } from "../hooks/useGlobalEvents";
+import { ImportPackDialog } from "./packs/ImportPackDialog";
 import { NewPackDialog } from "./packs/NewPackDialog";
 
 interface PackListProps {
@@ -28,6 +29,7 @@ export function PackList({ className }: PackListProps): JSX.Element {
   const [packs, setPacks] = useState<PackSummary[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [newOpen, setNewOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
 
   const reload = useCallback(() => {
     const abort = new AbortController();
@@ -86,14 +88,24 @@ export function PackList({ className }: PackListProps): JSX.Element {
           )}
         </NavLink>
       ))}
-      <button
-        type="button"
-        onClick={() => setNewOpen(true)}
-        className="mt-2 w-full px-2 py-2 text-sm border border-dashed border-slate-700 rounded text-slate-400 hover:text-slate-100 hover:border-slate-500"
-      >
-        + New pack
-      </button>
+      <div className="mt-2 space-y-2">
+        <button
+          type="button"
+          onClick={() => setNewOpen(true)}
+          className="w-full px-2 py-2 text-sm border border-dashed border-slate-700 rounded text-slate-400 hover:text-slate-100 hover:border-slate-500"
+        >
+          + New pack
+        </button>
+        <button
+          type="button"
+          onClick={() => setImportOpen(true)}
+          className="w-full px-2 py-2 text-sm border border-dashed border-slate-700 rounded text-slate-400 hover:text-slate-100 hover:border-slate-500"
+        >
+          Import pack…
+        </button>
+      </div>
       <NewPackDialog open={newOpen} onClose={() => setNewOpen(false)} />
+      <ImportPackDialog open={importOpen} onClose={() => setImportOpen(false)} />
     </div>
   );
 }
