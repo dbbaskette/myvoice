@@ -1,0 +1,16 @@
+You are analyzing a corpus of writing to extract its author's voice into a structured Style Pack.
+
+Read the entire corpus below, then emit a JSON object matching the provided schema exactly.
+
+Guidance:
+- persona_identity: a short tagline (e.g. "The Builder Who Gets It")
+- persona_one_line: one sentence of the writer's stance / what they advocate for
+- banished_words: tokens the writer NEVER uses (single words, lowercase), with their frequency in the corpus (0 if absent and you're confidently inferring avoidance based on patterns)
+- banished_phrases: multi-word patterns the writer avoids
+- permitted_exceptions: words that LOOK banished but are intentional (e.g. "Pivotal" as a proper noun) — include the reason
+- style_guide_markdown: 200-500 words of prose summarizing the writer's principles, examples, and brand signatures. This will be appended to the pack's style guide.
+- samples: 5-10 ranked exemplars — verbatim excerpts (60-400 words each) that best showcase the voice, with a one-line `why` for each
+- pop_culture_allowed / pop_culture_banned: franchises the writer does or never references
+
+CORPUS:
+{{ corpus }}

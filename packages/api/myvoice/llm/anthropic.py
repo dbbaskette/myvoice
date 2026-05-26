@@ -50,25 +50,66 @@ class AnthropicProvider:
     async def complete(
         self, *, model: str, prompt: str, json_schema: dict[str, object] | None = None
     ) -> LLMResponse:
-        body = {
+        return await self._complete_with_retry(model=model, prompt=prompt, json_schema=json_schema)
+
+    async def _complete_with_retry(
+        self,
+        *,
+        model: str,
+        prompt: str,
+        json_schema: dict[str, object] | None,
+        attempt: int = 0,
+    ) -> LLMResponse:
+        body: dict[str, object] = {
             "model": model,
             "max_tokens": 4096,
             "messages": [{"role": "user", "content": prompt}],
         }
+        if json_schema is not None:
+            body["tools"] = [
+                {"name": "record_analysis", "input_schema": json_schema}
+            ]
+            body["tool_choice"] = {"type": "tool", "name": "record_analysis"}
         async with httpx.AsyncClient(timeout=120.0) as client:
             r = await client.post(f"{_BASE_URL}/messages", headers=self._headers, json=body)
         self._raise_for_status(r)
         data = r.json()
-        text = "".join(
-            b.get("text", "") for b in data.get("content", []) if b.get("type") == "text"
-        )
         usage = data.get("usage", {})
+        in_tok = int(usage.get("input_tokens", 0))
+        out_tok = int(usage.get("output_tokens", 0))
+        finish = _map_stop_reason(data.get("stop_reason"))
+
+        if json_schema is None:
+            text = "".join(
+                b.get("text", "") for b in data.get("content", []) if b.get("type") == "text"
+            )
+            return LLMResponse(
+                text=text, input_tokens=in_tok, output_tokens=out_tok,
+                model=data.get("model", model), finish_reason=finish,
+            )
+
+        # Structured-output path: extract tool_use input
+        tool_block = next(
+            (b for b in data.get("content", []) if b.get("type") == "tool_use"),
+            None,
+        )
+        if tool_block is None:
+            if attempt == 0:
+                # One retry with corrective hint appended.
+                hint = (
+                    "\n\nYour previous response did not call the `record_analysis` tool. "
+                    "You MUST call the tool with valid arguments matching the schema."
+                )
+                return await self._complete_with_retry(
+                    model=model, prompt=prompt + hint, json_schema=json_schema, attempt=1,
+                )
+            raise ProviderError(
+                "Anthropic did not emit tool_use after retry.",
+            )._with_code("analyze_invalid_json")
         return LLMResponse(
-            text=text,
-            input_tokens=int(usage.get("input_tokens", 0)),
-            output_tokens=int(usage.get("output_tokens", 0)),
-            model=data.get("model", model),
-            finish_reason=_map_stop_reason(data.get("stop_reason")),
+            text=json.dumps(tool_block.get("input", {})),
+            input_tokens=in_tok, output_tokens=out_tok,
+            model=data.get("model", model), finish_reason=finish,
         )
 
     async def stream(self, *, model: str, prompt: str) -> AsyncIterator[StreamChunk]:

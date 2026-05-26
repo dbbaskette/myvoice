@@ -51,6 +51,16 @@ class OpenAIProvider:
     async def complete(
         self, *, model: str, prompt: str, json_schema: dict[str, object] | None = None
     ) -> LLMResponse:
+        return await self._complete_with_retry(model=model, prompt=prompt, json_schema=json_schema)
+
+    async def _complete_with_retry(
+        self,
+        *,
+        model: str,
+        prompt: str,
+        json_schema: dict[str, object] | None,
+        attempt: int = 0,
+    ) -> LLMResponse:
         body: dict[str, object] = {
             "model": model,
             "messages": [{"role": "user", "content": prompt}],
@@ -67,12 +77,30 @@ class OpenAIProvider:
         self._raise_for_status(r)
         data = r.json()
         choice = data["choices"][0]
+        text = choice["message"]["content"] or ""
+        in_tok = int(data.get("usage", {}).get("prompt_tokens", 0))
+        out_tok = int(data.get("usage", {}).get("completion_tokens", 0))
+        finish = _map_finish(choice.get("finish_reason"))
+
+        if json_schema is not None:
+            try:
+                json.loads(text)
+            except json.JSONDecodeError:
+                if attempt == 0:
+                    hint = (
+                        "\n\nYour previous response was not valid JSON. "
+                        "Re-emit ONLY a JSON object matching the schema."
+                    )
+                    return await self._complete_with_retry(
+                        model=model, prompt=prompt + hint,
+                        json_schema=json_schema, attempt=1,
+                    )
+                raise ProviderError("OpenAI returned invalid JSON after retry.")._with_code(
+                    "analyze_invalid_json"
+                ) from None
         return LLMResponse(
-            text=choice["message"]["content"] or "",
-            input_tokens=int(data.get("usage", {}).get("prompt_tokens", 0)),
-            output_tokens=int(data.get("usage", {}).get("completion_tokens", 0)),
-            model=data.get("model", model),
-            finish_reason=_map_finish(choice.get("finish_reason")),
+            text=text, input_tokens=in_tok, output_tokens=out_tok,
+            model=data.get("model", model), finish_reason=finish,
         )
 
     async def stream(self, *, model: str, prompt: str) -> AsyncIterator[StreamChunk]:

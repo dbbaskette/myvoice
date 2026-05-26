@@ -124,6 +124,12 @@ The repo ships two packs:
 
 Click **+ New pack** in the sidebar, fill in slug, name, author, and persona. The new pack is created from the bundled `_template/` and you land on its detail page ready to edit. Use the **Manifest** tab to edit banished words, rules, and persona; the **Danger zone** at the bottom soft-deletes the pack to `~/.myvoice/trash/`.
 
+### Extract a pack from URLs
+
+In the sidebar, click **Extract from URLs**. Paste one or more blog URLs (or drag in `.md` / `.txt` / `.docx` drafts), fill in the slug/name/author, pick a provider and model, and click **Analyze**. The LLM reads your corpus and proposes a complete pack: persona, banished words (with frequency counts), permitted exceptions, a style-guide draft, ranked sample excerpts, and pop-culture rules.
+
+Review the proposal inline — every field is editable, each sample has a keep/drop checkbox — then click **Save Pack**. The new pack lands in `~/.myvoice/packs/<slug>/` with the proposal's data merged into the `_template` scaffold, ready to refine on the Manifest tab.
+
 ### CLI
 
 ```bash
