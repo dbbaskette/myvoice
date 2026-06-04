@@ -9,10 +9,10 @@ import pytest
 import yaml
 from fastapi.testclient import TestClient
 
+from myvoice.packs.templates import locate_template
 from myvoice.server import create_app
 
-_REPO_ROOT = Path(__file__).resolve().parents[4]
-_TEMPLATE_SRC = _REPO_ROOT / "packs" / "_template"
+_TEMPLATE_SRC = locate_template()
 
 
 @pytest.fixture

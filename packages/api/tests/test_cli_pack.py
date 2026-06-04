@@ -9,14 +9,16 @@ from myvoice.cli import main
 REPO_ROOT = Path(__file__).resolve().parents[3]
 
 
-def test_pack_list_shows_dan_and_template() -> None:
+def test_pack_list_shows_dan_not_template() -> None:
+    """The repo packs/ dir holds real packs (dan); the _template scaffold lives
+    bundled inside the package, so it is not listed as a usable pack."""
     runner = CliRunner()
     result = runner.invoke(
         main, ["pack", "list", "--root", str(REPO_ROOT / "packs")]
     )
     assert result.exit_code == 0
     assert "dan" in result.output
-    assert "_template" in result.output
+    assert "_template" not in result.output
 
 
 def test_pack_validate_dan_succeeds() -> None:
