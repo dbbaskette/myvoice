@@ -4,3 +4,5 @@
 - **No participle tack-ons.** Don't append fake significance with "-ing" clauses: "..., highlighting its importance", "..., creating a seamless experience", "..., reflecting a broader trend." End the sentence.
 - **No puffery.** Drop travel-brochure and press-release adjectives: "nestled in the heart of", "rich tapestry", "vibrant community", "breathtaking". Name the specific thing instead.
 - **No vague attribution.** Don't cite "experts", "studies show", "industry reports", or "observers note" without a real source. Name it or cut it.
+- **Synthesize, don't summarize.** Connect ideas and show what they mean or why they matter; don't just list them one after another.
+- **Skip generic praise adjectives.** Words like "significant", "important", "effective", and "essential" say nothing on their own. Replace them with the specific reason or number that makes the point.
