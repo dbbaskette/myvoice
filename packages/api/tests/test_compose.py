@@ -102,3 +102,21 @@ def test_header_uses_persona_tone_when_set() -> None:
 def test_header_falls_back_when_tone_absent() -> None:
     out = _render_header(_manifest(None))
     assert "The output must be authentic to the author's voice." in out
+
+
+def test_compose_injects_default_writing_craft() -> None:
+    """With no per-pack override, the shared baseline default is injected."""
+    out = compose(_load_dan())
+    assert "## Section 2: General Writing Craft" in out
+    assert "Where the author's style guide below conflicts" in out
+    assert "Never robotic" in out  # moved here from the old header
+    assert "Concrete over abstract" in out
+
+
+def test_compose_writing_craft_ordering() -> None:
+    """Craft section sits after the Humanizer and before the style-guide prose."""
+    out = compose(_load_dan())
+    humanizer = out.index("Section 1: The Humanizer")
+    craft = out.index("## Section 2: General Writing Craft")
+    style_guide = out.index("## Writing Principles")  # from style-guide.md
+    assert humanizer < craft < style_guide
