@@ -11,6 +11,12 @@ from pathlib import Path
 
 import yaml
 
+from myvoice.ai_tells import (
+    effective_phrases,
+    effective_sentence_starters,
+    effective_words,
+    load_ai_tells,
+)
 from myvoice.packs.manifest import Manifest
 
 
@@ -43,7 +49,7 @@ def compose(
 
     parts: list[str] = []
     parts.append(_render_header(manifest))
-    parts.append(_render_humanizer(manifest))
+    parts.append(_render_humanizer(manifest, pack_root))
     parts.append(_render_writing_craft(pack_root))
     parts.append((pack_root / "style-guide.md").read_text(encoding="utf-8"))
 
@@ -92,18 +98,27 @@ def _render_header(m: Manifest) -> str:
     )
 
 
-def _render_humanizer(m: Manifest) -> str:
+def _load_ai_patterns(pack_root: Path) -> str:
+    override = pack_root / "ai-patterns.md"
+    if override.is_file():
+        return override.read_text(encoding="utf-8")
+    return load_ai_tells().patterns
+
+
+def _render_humanizer(m: Manifest, pack_root: Path) -> str:
     lines: list[str] = ["## Section 1: The Humanizer (Strict Anti-Robot Constraints)\n"]
     lines.append("Before applying style, you must scrub the text of LLM-isms:\n")
 
-    if m.banished.words:
+    words = effective_words(m)
+    if words:
         lines.append("**Banished Vocabulary** (do NOT use):")
-        lines.append(", ".join(m.banished.words))
+        lines.append(", ".join(words))
         lines.append("")
 
-    if m.banished.phrases:
+    phrases = effective_phrases(m)
+    if phrases:
         lines.append("**Banished Phrases** (strike on sight):")
-        for ph in m.banished.phrases:
+        for ph in phrases:
             lines.append(f'- "{ph}"')
         lines.append("")
 
@@ -118,8 +133,9 @@ def _render_humanizer(m: Manifest) -> str:
         rules.append("No em dashes.")
     if m.rules.no_ascii_double_hyphen_between_letters:
         rules.append("No ASCII double-hyphen (`--`) between letters.")
-    if m.rules.no_sentence_starters:
-        joined = ", ".join(f'"{s}"' for s in m.rules.no_sentence_starters)
+    starters = effective_sentence_starters(m)
+    if starters:
+        joined = ", ".join(f'"{s}"' for s in starters)
         rules.append(f"No sentence starts with: {joined}.")
     if rules:
         lines.append("**Rules:**")
@@ -133,6 +149,10 @@ def _render_humanizer(m: Manifest) -> str:
             lines.append(f"- Allowed franchises: {', '.join(m.pop_culture.allowed)}")
         if m.pop_culture.banned:
             lines.append(f"- Banned franchises: {', '.join(m.pop_culture.banned)}")
+        lines.append("")
+
+    lines.append("**Avoid these AI sentence patterns:**\n")
+    lines.append(_load_ai_patterns(pack_root))
 
     return "\n".join(lines)
 

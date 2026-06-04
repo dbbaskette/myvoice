@@ -12,6 +12,7 @@ _EXPECTED = {
     "compose_prompt",
     "lint",
     "lint_to_hits",
+    "detect_ai_patterns",
     "detect_positive_hits",
     "validate_pack",
     "Violation",

@@ -49,3 +49,14 @@ def test_lint_returns_404_for_unknown_pack(client_with_config: tuple[TestClient,
     client, _ = client_with_config
     r = client.post("/api/lint", json={"pack": "no-such-pack", "text": "hello"})
     assert r.status_code == 404
+
+
+def test_lint_endpoint_flags_ai_pattern(client_with_config: tuple[TestClient, Path]) -> None:
+    client, _ = client_with_config
+    r = client.post(
+        "/api/lint",
+        json={"pack": "dan", "text": "It's not just a tool, it's a movement."},
+    )
+    assert r.status_code == 200
+    rule_ids = [v["rule_id"] for v in r.json()["violations"]]
+    assert any(rid == "ai_pattern:negation" for rid in rule_ids)
