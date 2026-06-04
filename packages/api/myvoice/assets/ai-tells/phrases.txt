@@ -1,4 +1,5 @@
 # Universal AI-tell phrases. One per line. Matched case-insensitively as substrings.
+# Note: a few entries (e.g. "a testament to") intentionally overlap the lint.py _AI_INFLATION detector.
 It's important to note that
 It's worth noting that
 In today's digital age
