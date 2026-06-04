@@ -14,6 +14,7 @@ from myvoice import __version__
 from myvoice.config import default_config_path, load_config
 from myvoice.jobs.registry import JobRegistry
 from myvoice.packs.store import PackStore
+from myvoice.packs.templates import resolve_write_root
 from myvoice.watch import EventBus, watch_task
 
 
@@ -34,21 +35,28 @@ def _is_dev_mode() -> bool:
 
 
 def _resolve_pack_roots() -> list[Path]:
-    """Built-in pack roots from env + repo, not yet merged with config.
+    """Built-in pack roots, not yet merged with config.
 
-    Priority:
-    1. MYVOICE_PACKS_ROOT env var (single path).
-    2. Repo packs/ dir if it exists (dev/test mode).
-    3. Empty list (installed wheel; user packs come from config).
+    Sources (in order, deduped):
+    1. MYVOICE_PACKS_ROOT env var (single path), else the repo packs/ dir if it
+       exists (dev/test mode).
+    2. The writable pack dir (``resolve_write_root()``) — ALWAYS included so packs
+       created via POST /api/packs are discoverable. In an installed wheel with no
+       env var and no repo packs/, this is the only root.
     """
+    roots: list[Path] = []
     env = os.environ.get("MYVOICE_PACKS_ROOT")
     if env:
-        return [Path(env)]
-    # `__file__` = packages/api/myvoice/server.py → parents[3] = repo root
-    repo_packs = Path(__file__).resolve().parents[3] / "packs"
-    if repo_packs.is_dir():
-        return [repo_packs]
-    return []
+        roots.append(Path(env))
+    else:
+        # `__file__` = packages/api/myvoice/server.py → parents[3] = repo root
+        repo_packs = Path(__file__).resolve().parents[3] / "packs"
+        if repo_packs.is_dir():
+            roots.append(repo_packs)
+    write_root = resolve_write_root()
+    if write_root.resolve() not in {r.resolve() for r in roots}:
+        roots.append(write_root)
+    return roots
 
 
 def effective_pack_roots(config_pack_paths: list[str]) -> list[Path]:
@@ -75,6 +83,8 @@ async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
     cfg = load_config(cfg_path)
     app.state.config = cfg
     app.state.config_path = cfg_path
+    # Ensure the writable pack dir exists so it's a valid discovery/watch root.
+    resolve_write_root().mkdir(parents=True, exist_ok=True)
     pack_roots = effective_pack_roots(cfg.pack_paths)
     app.state.pack_store = PackStore(pack_roots)
     app.state.job_registry = JobRegistry()
