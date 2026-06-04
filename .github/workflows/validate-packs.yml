@@ -22,10 +22,10 @@ jobs:
       - name: Install deps
         run: uv sync --frozen
 
-      - name: Validate every pack in packs/
+      - name: Validate every pack in packs/ + the bundled scaffold
         run: |
           set -e
-          for pack in packs/*/; do
+          for pack in packs/*/ packages/api/myvoice/bundled_packs/*/; do
             echo "==> $pack"
             uv run myvoice pack validate "$pack"
           done
