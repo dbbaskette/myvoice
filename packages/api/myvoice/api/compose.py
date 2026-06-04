@@ -8,7 +8,7 @@ from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
 
 from myvoice.compose import compose
-from myvoice.lint import detect_positive_hits, lint_to_hits
+from myvoice.lint import detect_ai_patterns, detect_positive_hits, lint_to_hits
 from myvoice.packs.manifest import Manifest
 
 router = APIRouter(tags=["compose"])
@@ -57,7 +57,7 @@ def lint_endpoint(req: LintRequest, request: Request) -> dict[str, object]:
     manifest = Manifest.model_validate(
         yaml.safe_load(manifest_path.read_text(encoding="utf-8"))
     )
-    violations = lint_to_hits(manifest, req.text)
+    violations = lint_to_hits(manifest, req.text) + detect_ai_patterns(req.text)
     hits = detect_positive_hits(req.text)
     return {
         "violations": [dataclasses.asdict(v) for v in violations],

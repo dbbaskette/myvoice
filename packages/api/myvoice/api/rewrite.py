@@ -12,7 +12,7 @@ from myvoice.compose import compose
 from myvoice.config import Config
 from myvoice.jobs.models import JobType
 from myvoice.jobs.registry import JobRegistry
-from myvoice.lint import detect_positive_hits, lint_to_hits
+from myvoice.lint import detect_ai_patterns, detect_positive_hits, lint_to_hits
 from myvoice.llm.cost import usd
 from myvoice.llm.exceptions import ProviderError, ProviderMissingKey, ProviderRateLimit
 from myvoice.llm.registry import get_provider
@@ -100,7 +100,7 @@ async def _run_rewrite(
             return
         full_output = job.partial_text
         await reg.set_stage(job_id, "linting", progress=0.95)
-        violations = lint_to_hits(manifest, full_output)
+        violations = lint_to_hits(manifest, full_output) + detect_ai_patterns(full_output)
         hits = detect_positive_hits(full_output)
         in_tok = final_usage.input_tokens if final_usage else 0
         out_tok = final_usage.output_tokens if final_usage else 0
