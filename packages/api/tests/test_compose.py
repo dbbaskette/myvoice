@@ -4,7 +4,8 @@ from pathlib import Path
 
 import pytest
 
-from myvoice.compose import ComposeError, compose
+from myvoice.compose import ComposeError, _render_header, compose
+from myvoice.packs.manifest import Manifest
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 PACKS_DIR = REPO_ROOT / "packs"
@@ -77,3 +78,27 @@ def test_compose_unknown_sample_id_raises() -> None:
 def test_compose_unknown_bio_raises() -> None:
     with pytest.raises(ComposeError, match="bio 'no-such-bio' not found"):
         compose(_load_dan(), bio="no-such-bio")
+
+
+def _manifest(tone: str | None) -> Manifest:
+    persona: dict[str, str] = {"identity": "The Tester", "one_line": "Writes tests."}
+    if tone is not None:
+        persona["tone"] = tone
+    return Manifest.model_validate(
+        {
+            "spec_version": "1.0",
+            "pack": {"slug": "t", "name": "T", "version": "1.0", "author": "T"},
+            "persona": persona,
+        }
+    )
+
+
+def test_header_uses_persona_tone_when_set() -> None:
+    out = _render_header(_manifest("calm, precise, and warm"))
+    assert "The output must be calm, precise, and warm." in out
+    assert "energetic, definitive, and transparent" not in out
+
+
+def test_header_falls_back_when_tone_absent() -> None:
+    out = _render_header(_manifest(None))
+    assert "The output must be authentic to the author's voice." in out

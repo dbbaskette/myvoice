@@ -58,11 +58,11 @@ def compose(
 
 
 def _render_header(m: Manifest) -> str:
+    tone = m.persona.tone or "authentic to the author's voice"
     return (
         f"ROLE: You are {m.persona.identity}. {m.persona.one_line}\n\n"
         "TASK: Rewrite the input text to be 100% authentic to the style guide "
-        "below. The output must be energetic, definitive, and transparent. "
-        "Never robotic."
+        f"below. The output must be {tone}."
     )
 
 
