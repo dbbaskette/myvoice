@@ -54,6 +54,7 @@ export interface CreatePackRequest {
   author: string;
   persona_identity: string;
   persona_one_line: string;
+  persona_tone?: string;
   version?: string;
   description?: string;
 }

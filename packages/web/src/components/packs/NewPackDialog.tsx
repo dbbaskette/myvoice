@@ -17,6 +17,7 @@ export function NewPackDialog({ open, onClose }: NewPackDialogProps): JSX.Elemen
   const [author, setAuthor] = useState("");
   const [identity, setIdentity] = useState("");
   const [oneLine, setOneLine] = useState("");
+  const [tone, setTone] = useState("");
   const [description, setDescription] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [slugError, setSlugError] = useState<string | null>(null);
@@ -39,6 +40,7 @@ export function NewPackDialog({ open, onClose }: NewPackDialogProps): JSX.Elemen
     setAuthor("");
     setIdentity("");
     setOneLine("");
+    setTone("");
     setDescription("");
     setSlugError(null);
     setError(null);
@@ -56,6 +58,7 @@ export function NewPackDialog({ open, onClose }: NewPackDialogProps): JSX.Elemen
         author,
         persona_identity: identity,
         persona_one_line: oneLine,
+        persona_tone: tone.trim() || undefined,
         description: description.trim() || undefined,
       });
       const newSlug = slug;
@@ -92,7 +95,7 @@ export function NewPackDialog({ open, onClose }: NewPackDialogProps): JSX.Elemen
         <Field
           label="Slug"
           htmlFor="np-slug"
-          hint="lowercase, hyphens, no spaces"
+          hint="Pack id — used in the URL and folder name. Lowercase, hyphens, no spaces."
           error={slugError}
         >
           <input
@@ -100,7 +103,7 @@ export function NewPackDialog({ open, onClose }: NewPackDialogProps): JSX.Elemen
             type="text"
             value={slug}
             onChange={(e) => setSlug(e.target.value)}
-            placeholder="alice"
+            placeholder="alice-chen"
             className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-slate-100"
           />
           {!slugValid && slug !== "" && (
@@ -108,51 +111,83 @@ export function NewPackDialog({ open, onClose }: NewPackDialogProps): JSX.Elemen
           )}
         </Field>
 
-        <Field label="Name" htmlFor="np-name">
+        <Field label="Name" htmlFor="np-name" hint="Display name shown in the pack list.">
           <input
             id="np-name"
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
+            placeholder="Alice Chen"
             className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-slate-100"
           />
         </Field>
 
-        <Field label="Author" htmlFor="np-author">
+        <Field label="Author" htmlFor="np-author" hint="Whose writing voice this pack captures.">
           <input
             id="np-author"
             type="text"
             value={author}
             onChange={(e) => setAuthor(e.target.value)}
+            placeholder="Alice Chen"
             className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-slate-100"
           />
         </Field>
 
-        <Field label="Persona identity" htmlFor="np-identity" hint="A short tagline">
+        <Field
+          label="Persona identity"
+          htmlFor="np-identity"
+          hint="A short label for who is 'speaking' — the character or archetype behind the voice."
+        >
           <input
             id="np-identity"
             type="text"
             value={identity}
             onChange={(e) => setIdentity(e.target.value)}
+            placeholder="The Developer's Translator"
             className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-slate-100"
           />
         </Field>
 
-        <Field label="Persona one-line" htmlFor="np-oneline" hint="One sentence of stance">
+        <Field
+          label="Persona one-line"
+          htmlFor="np-oneline"
+          hint="One sentence: what they do and what they stand for."
+        >
           <input
             id="np-oneline"
             type="text"
             value={oneLine}
             onChange={(e) => setOneLine(e.target.value)}
+            placeholder="Turns deep technical capability into clear value for builders and buyers."
             className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-slate-100"
           />
         </Field>
 
-        <Field label="Description (optional)" htmlFor="np-desc">
+        <Field
+          label="Persona tone (optional)"
+          htmlFor="np-tone"
+          hint="A few adjectives for how it sounds. Leave blank for a neutral default."
+        >
+          <input
+            id="np-tone"
+            type="text"
+            value={tone}
+            onChange={(e) => setTone(e.target.value)}
+            placeholder="energetic, definitive, transparent"
+            className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-slate-100"
+          />
+        </Field>
+
+        <Field
+          label="Description (optional)"
+          htmlFor="np-desc"
+          hint="Short blurb shown in the pack list."
+        >
           <textarea
             id="np-desc"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
+            placeholder="Energetic, definitive, transparent."
             className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-slate-100 h-16"
           />
         </Field>
