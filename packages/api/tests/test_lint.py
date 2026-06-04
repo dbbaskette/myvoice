@@ -82,3 +82,16 @@ def test_violation_has_line_and_column() -> None:
     found = next(v for v in violations if v.match == "delve")
     assert found.line == 2
     assert found.column == 8  # 0-indexed position of 'd' on line 2
+
+
+def test_lint_flags_shared_word_absent_from_pack() -> None:
+    """A pack with an empty banished list still flags a shared AI word."""
+    m = Manifest.model_validate(
+        {
+            "spec_version": "1.0",
+            "pack": {"slug": "t", "name": "T", "version": "1.0", "author": "T"},
+            "persona": {"identity": "T", "one_line": "T"},
+        }
+    )
+    vs = lint(m, "Let me delve into this.")
+    assert any(v.match.lower() == "delve" for v in vs)

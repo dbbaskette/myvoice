@@ -6,6 +6,11 @@ import re
 from dataclasses import dataclass
 from typing import Literal
 
+from myvoice.ai_tells import (
+    effective_phrases,
+    effective_sentence_starters,
+    effective_words,
+)
 from myvoice.packs.manifest import Manifest
 
 Kind = Literal["word", "phrase", "rule"]
@@ -67,6 +72,17 @@ _CONFLICT_OPENERS = re.compile(
 _S2V_TRIGGERS = re.compile(r"\b(unlock|powerhouse|tipping point|finally)\b", re.IGNORECASE)
 _S2V_TIME = re.compile(r"\b\d+\s*(?:minute|hour|day|week|x|\xd7|%)\b", re.IGNORECASE)
 _GOLDEN = re.compile(r"(?:^|\n)\s*((?:[A-Z][a-z]+\.\s*){3,4})", re.MULTILINE)
+_AI_NEGATION = re.compile(
+    r"\b(?:it'?s not just|(?:isn'?t|aren'?t|wasn'?t|weren'?t) just"
+    r"|more than just|goes beyond just)\b",
+    re.IGNORECASE,
+)
+_AI_NOT_ONLY = re.compile(r"\bnot only\b[^.?!\n]*\bbut\b", re.IGNORECASE)
+_AI_INFLATION = re.compile(
+    r"\b(?:serves as|stands as|a testament to|leaves? an indelible mark"
+    r"|plays? a (?:vital|crucial|pivotal|key|central) role)\b",
+    re.IGNORECASE,
+)
 
 
 def detect_positive_hits(text: str) -> list[LintHit]:
@@ -108,6 +124,26 @@ def detect_positive_hits(text: str) -> list[LintHit]:
     return hits
 
 
+def detect_ai_patterns(text: str) -> list[LintHit]:
+    """Detect high-precision structural AI-writing tells (negation, inflation)."""
+    hits: list[LintHit] = []
+    specs = (
+        (_AI_NEGATION, "ai_pattern:negation", "AI negation/antithesis pattern."),
+        (_AI_NOT_ONLY, "ai_pattern:negation", "AI 'not only... but' pattern."),
+        (_AI_INFLATION, "ai_pattern:inflation", "AI significance-inflation phrasing."),
+    )
+    for pattern, rule_id, message in specs:
+        for m in pattern.finditer(text):
+            hits.append(LintHit(
+                start=_utf16_offset(text, m.start()),
+                end=_utf16_offset(text, m.end()),
+                kind="rule",
+                rule_id=rule_id,
+                message=message,
+            ))
+    return hits
+
+
 def lint(manifest: Manifest, text: str) -> list[Violation]:
     """Return all violations of `manifest` rules in `text`."""
     violations: list[Violation] = []
@@ -118,7 +154,7 @@ def lint(manifest: Manifest, text: str) -> list[Violation]:
     lines = text.splitlines()
 
     # Banished words: case-insensitive whole-word match, but exempt exact-case matches.
-    for word in manifest.banished.words:
+    for word in effective_words(manifest):
         pattern = re.compile(rf"(?<![\w-])({re.escape(word)})(?![\w-])", re.IGNORECASE)
         for ln_no, line in enumerate(lines, start=1):
             for m in pattern.finditer(line):
@@ -133,7 +169,7 @@ def lint(manifest: Manifest, text: str) -> list[Violation]:
                 ))
 
     # Banished phrases: case-insensitive substring match.
-    for phrase in manifest.banished.phrases:
+    for phrase in effective_phrases(manifest):
         pattern = re.compile(re.escape(phrase), re.IGNORECASE)
         for ln_no, line in enumerate(lines, start=1):
             for m in pattern.finditer(line):
@@ -171,8 +207,9 @@ def lint(manifest: Manifest, text: str) -> list[Violation]:
                 ))
 
     # Forbidden sentence starters: at start-of-line OR after ". ", "! ", "? ".
-    if manifest.rules.no_sentence_starters:
-        starter_alt = "|".join(re.escape(s) for s in manifest.rules.no_sentence_starters)
+    starters = effective_sentence_starters(manifest)
+    if starters:
+        starter_alt = "|".join(re.escape(s) for s in starters)
         pattern = re.compile(rf"(?:^|(?<=[.!?]\s))({starter_alt})\b")
         for ln_no, line in enumerate(lines, start=1):
             for m in pattern.finditer(line):

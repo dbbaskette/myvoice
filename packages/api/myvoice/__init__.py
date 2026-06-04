@@ -17,6 +17,7 @@ from myvoice.compose import compose as compose_prompt
 from myvoice.lint import (
     LintHit,
     Violation,
+    detect_ai_patterns,
     detect_positive_hits,
     lint,
     lint_to_hits,
@@ -32,6 +33,7 @@ __all__ = [
     "Violation",
     "__version__",
     "compose_prompt",
+    "detect_ai_patterns",
     "detect_positive_hits",
     "lint",
     "lint_to_hits",
