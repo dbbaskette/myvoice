@@ -4,7 +4,8 @@ from pathlib import Path
 
 import pytest
 
-from myvoice.compose import ComposeError, compose
+from myvoice.compose import ComposeError, _render_header, compose
+from myvoice.packs.manifest import Manifest
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 PACKS_DIR = REPO_ROOT / "packs"
@@ -77,3 +78,64 @@ def test_compose_unknown_sample_id_raises() -> None:
 def test_compose_unknown_bio_raises() -> None:
     with pytest.raises(ComposeError, match="bio 'no-such-bio' not found"):
         compose(_load_dan(), bio="no-such-bio")
+
+
+def _manifest(tone: str | None) -> Manifest:
+    persona: dict[str, str] = {"identity": "The Tester", "one_line": "Writes tests."}
+    if tone is not None:
+        persona["tone"] = tone
+    return Manifest.model_validate(
+        {
+            "spec_version": "1.0",
+            "pack": {"slug": "t", "name": "T", "version": "1.0", "author": "T"},
+            "persona": persona,
+        }
+    )
+
+
+def test_header_uses_persona_tone_when_set() -> None:
+    out = _render_header(_manifest("calm, precise, and warm"))
+    assert "The output must be calm, precise, and warm." in out
+    assert "energetic, definitive, and transparent" not in out
+
+
+def test_header_falls_back_when_tone_absent() -> None:
+    out = _render_header(_manifest(None))
+    assert "The output must be authentic to the author's voice." in out
+
+
+def test_compose_injects_default_writing_craft() -> None:
+    """With no per-pack override, the shared baseline default is injected."""
+    out = compose(_load_dan())
+    assert "## Section 2: General Writing Craft" in out
+    assert "Where the author's style guide below conflicts" in out
+    assert "Never robotic" in out  # moved here from the old header
+    assert "Concrete over abstract" in out
+
+
+def test_compose_writing_craft_ordering() -> None:
+    """Craft section sits after the Humanizer and before the style-guide prose."""
+    out = compose(_load_dan())
+    humanizer = out.index("Section 1: The Humanizer")
+    craft = out.index("## Section 2: General Writing Craft")
+    style_guide = out.index("## Writing Principles")  # from style-guide.md
+    assert humanizer < craft < style_guide
+
+
+def test_compose_pack_override_replaces_default(tmp_path: Path) -> None:
+    """A pack-local writing-baseline.md replaces the shared default."""
+    (tmp_path / "stylepack.yaml").write_text(
+        "spec_version: '1.0'\n"
+        "pack:\n  slug: ov\n  name: Override\n  version: '1.0'\n  author: Tester\n"
+        "persona:\n  identity: The Overrider\n  one_line: Replaces the baseline.\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "style-guide.md").write_text("# Style Guide\n\nVoice prose.\n", encoding="utf-8")
+    (tmp_path / "writing-baseline.md").write_text(
+        "- **Pack-specific craft rule.** Only this pack uses it.\n", encoding="utf-8"
+    )
+
+    out = compose(tmp_path)
+    assert "Pack-specific craft rule." in out
+    assert "Concrete over abstract" not in out
+    assert "## Section 2: General Writing Craft" in out

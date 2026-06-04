@@ -6,6 +6,7 @@ SPEC v1.0 pack via its manifest.
 
 from __future__ import annotations
 
+from importlib import resources
 from pathlib import Path
 
 import yaml
@@ -43,6 +44,7 @@ def compose(
     parts: list[str] = []
     parts.append(_render_header(manifest))
     parts.append(_render_humanizer(manifest))
+    parts.append(_render_writing_craft(pack_root))
     parts.append((pack_root / "style-guide.md").read_text(encoding="utf-8"))
 
     if format is not None:
@@ -57,12 +59,36 @@ def compose(
     return "\n\n".join(p.rstrip() for p in parts) + "\n"
 
 
+def _load_default_baseline() -> str:
+    """Read the shared writing-craft baseline bundled in the package."""
+    return (
+        resources.files("myvoice")
+        .joinpath("assets/writing-baseline.md")
+        .read_text(encoding="utf-8")
+    )
+
+
+def _render_writing_craft(pack_root: Path) -> str:
+    override = pack_root / "writing-baseline.md"
+    body = (
+        override.read_text(encoding="utf-8")
+        if override.is_file()
+        else _load_default_baseline()
+    )
+    return (
+        "## Section 2: General Writing Craft\n\n"
+        "These are general craft defaults. Where the author's style guide "
+        "below conflicts, the style guide wins.\n\n"
+        f"{body}"
+    )
+
+
 def _render_header(m: Manifest) -> str:
+    tone = m.persona.tone or "authentic to the author's voice"
     return (
         f"ROLE: You are {m.persona.identity}. {m.persona.one_line}\n\n"
         "TASK: Rewrite the input text to be 100% authentic to the style guide "
-        "below. The output must be energetic, definitive, and transparent. "
-        "Never robotic."
+        f"below. The output must be {tone}."
     )
 
 

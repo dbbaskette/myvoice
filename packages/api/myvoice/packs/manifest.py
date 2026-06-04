@@ -25,6 +25,7 @@ class Pack(_StrictModel):
 class Persona(_StrictModel):
     identity: str = Field(min_length=1)
     one_line: str = Field(min_length=1)
+    tone: str | None = None
 
 
 class PermittedException(_StrictModel):
