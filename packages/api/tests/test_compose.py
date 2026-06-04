@@ -166,3 +166,15 @@ def test_pack_ai_patterns_override(tmp_path: Path) -> None:
     assert "Custom AI rule." in out
     assert "Negation / antithesis" not in out  # default replaced
     assert "Avoid these AI sentence patterns" in out  # wrapper still present
+
+
+def test_dan_effective_bans_survive_migration() -> None:
+    """After emptying Dan's inline lists, representative bans still appear via the
+    shared layer, and Dan's permitted exceptions are still rendered."""
+    out = compose(_load_dan())
+    for word in ("delve", "utilize", "seamless", "embark"):
+        assert word in out, f"{word} missing from Dan's composed output"
+    for phrase in ("In conclusion", "At its core"):
+        assert phrase in out
+    assert "Pivotal" in out  # permitted exception term
+    assert "Marvel" in out   # pop culture allowed
