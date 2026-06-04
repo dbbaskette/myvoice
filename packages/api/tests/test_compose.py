@@ -139,3 +139,30 @@ def test_compose_pack_override_replaces_default(tmp_path: Path) -> None:
     assert "Pack-specific craft rule." in out
     assert "Concrete over abstract" not in out
     assert "## Section 2: General Writing Craft" in out
+
+
+def test_humanizer_includes_shared_word() -> None:
+    """A shared AI word appears in Dan's Humanizer (even once Dan's list empties)."""
+    out = compose(_load_dan())
+    assert "delve" in out
+
+
+def test_humanizer_includes_ai_patterns_block() -> None:
+    out = compose(_load_dan())
+    assert "Avoid these AI sentence patterns" in out
+    assert "Negation / antithesis" in out  # from patterns.md
+
+
+def test_pack_ai_patterns_override(tmp_path: Path) -> None:
+    (tmp_path / "stylepack.yaml").write_text(
+        "spec_version: '1.0'\n"
+        "pack:\n  slug: ov\n  name: O\n  version: '1.0'\n  author: T\n"
+        "persona:\n  identity: O\n  one_line: o\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "style-guide.md").write_text("# Style Guide\n\nprose\n", encoding="utf-8")
+    (tmp_path / "ai-patterns.md").write_text("- **Custom AI rule.** Only here.\n", encoding="utf-8")
+    out = compose(tmp_path)
+    assert "Custom AI rule." in out
+    assert "Negation / antithesis" not in out  # default replaced
+    assert "Avoid these AI sentence patterns" in out  # wrapper still present
