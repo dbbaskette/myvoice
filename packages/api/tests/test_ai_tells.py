@@ -35,6 +35,14 @@ def test_load_skips_comments_and_blanks() -> None:
     assert tells.patterns.strip()
 
 
+def test_load_includes_westcliff_additions() -> None:
+    tells = load_ai_tells()
+    for phrase in ("this paper presents", "another key factor"):
+        assert phrase in tells.phrases
+    assert "Synthesize, don't summarize" in tells.patterns
+    assert "generic praise adjectives" in tells.patterns
+
+
 def test_effective_words_is_deduped_union() -> None:
     m = _manifest(words=["frobnicate", "DELVE"])
     eff = effective_words(m)
