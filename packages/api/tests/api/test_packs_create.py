@@ -64,6 +64,43 @@ def test_create_pack_success(create_client: tuple[TestClient, Path]) -> None:
     assert r.status_code == 200
 
 
+def test_create_pack_with_tone_writes_persona_tone(
+    create_client: tuple[TestClient, Path],
+) -> None:
+    client, packs_root = create_client
+    r = client.post(
+        "/api/packs",
+        json={
+            "slug": "toned",
+            "name": "Toned",
+            "author": "T",
+            "persona_identity": "The Closer",
+            "persona_one_line": "Gets to the point.",
+            "persona_tone": "energetic, definitive, and transparent",
+        },
+    )
+    assert r.status_code == 201, r.text
+    manifest = yaml.safe_load((packs_root / "toned" / "stylepack.yaml").read_text())
+    assert manifest["persona"]["tone"] == "energetic, definitive, and transparent"
+
+
+def test_create_pack_without_tone_omits_it(create_client: tuple[TestClient, Path]) -> None:
+    client, packs_root = create_client
+    r = client.post(
+        "/api/packs",
+        json={
+            "slug": "plain",
+            "name": "Plain",
+            "author": "P",
+            "persona_identity": "i",
+            "persona_one_line": "o",
+        },
+    )
+    assert r.status_code == 201, r.text
+    manifest = yaml.safe_load((packs_root / "plain" / "stylepack.yaml").read_text())
+    assert "tone" not in manifest["persona"]
+
+
 def test_create_pack_slug_conflict_returns_409(create_client: tuple[TestClient, Path]) -> None:
     client, _ = create_client
     payload = {

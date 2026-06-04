@@ -21,6 +21,7 @@ class CreatePackRequest(BaseModel):
     author: str = Field(min_length=1)
     persona_identity: str = Field(min_length=1)
     persona_one_line: str = Field(min_length=1)
+    persona_tone: str | None = None
     version: str = "0.1.0"
     description: str | None = None
 
@@ -69,6 +70,10 @@ async def create_pack(req: CreatePackRequest, request: Request) -> dict[str, Any
         data["pack"]["description"] = req.description
     data["persona"]["identity"] = req.persona_identity
     data["persona"]["one_line"] = req.persona_one_line
+    if req.persona_tone is None or req.persona_tone.strip() == "":
+        data["persona"].pop("tone", None)
+    else:
+        data["persona"]["tone"] = req.persona_tone
     manifest_path.write_text(yaml.safe_dump(data, sort_keys=False), encoding="utf-8")
 
     # Re-index
