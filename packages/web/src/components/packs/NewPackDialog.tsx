@@ -2,8 +2,7 @@ import { type FormEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { createPack } from "../../api/packs";
-
-const SLUG_PATTERN = /^[a-z][a-z0-9\-_]*$/;
+import { slugify } from "./slugify";
 
 interface NewPackDialogProps {
   open: boolean;
@@ -12,7 +11,6 @@ interface NewPackDialogProps {
 
 export function NewPackDialog({ open, onClose }: NewPackDialogProps): JSX.Element | null {
   const navigate = useNavigate();
-  const [slug, setSlug] = useState("");
   const [name, setName] = useState("");
   const [author, setAuthor] = useState("");
   const [identity, setIdentity] = useState("");
@@ -20,36 +18,35 @@ export function NewPackDialog({ open, onClose }: NewPackDialogProps): JSX.Elemen
   const [tone, setTone] = useState("");
   const [description, setDescription] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [slugError, setSlugError] = useState<string | null>(null);
+  const [nameError, setNameError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   if (!open) return null;
 
-  const slugValid = SLUG_PATTERN.test(slug);
+  // Slug is derived from the name, never entered by hand.
+  const slug = slugify(name);
   const canSubmit =
     !submitting &&
-    slugValid &&
-    name.trim() !== "" &&
+    slug !== "" &&
     author.trim() !== "" &&
     identity.trim() !== "" &&
     oneLine.trim() !== "";
 
   const reset = (): void => {
-    setSlug("");
     setName("");
     setAuthor("");
     setIdentity("");
     setOneLine("");
     setTone("");
     setDescription("");
-    setSlugError(null);
+    setNameError(null);
     setError(null);
   };
 
   const handleSubmit = async (e: FormEvent): Promise<void> => {
     e.preventDefault();
     setSubmitting(true);
-    setSlugError(null);
+    setNameError(null);
     setError(null);
     try {
       await createPack({
@@ -68,7 +65,7 @@ export function NewPackDialog({ open, onClose }: NewPackDialogProps): JSX.Elemen
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       if (msg.includes("409") || msg.toLowerCase().includes("slug_conflict")) {
-        setSlugError("A pack with this slug already exists.");
+        setNameError(`A pack named "${name}" already exists. Try a different name.`);
       } else {
         setError(msg);
       }
@@ -93,25 +90,11 @@ export function NewPackDialog({ open, onClose }: NewPackDialogProps): JSX.Elemen
         <h2 className="text-lg font-semibold text-slate-100">New pack</h2>
 
         <Field
-          label="Slug"
-          htmlFor="np-slug"
-          hint="Pack id — used in the URL and folder name. Lowercase, hyphens, no spaces."
-          error={slugError}
+          label="What's this pack called?"
+          htmlFor="np-name"
+          hint="The display name for this voice."
+          error={nameError}
         >
-          <input
-            id="np-slug"
-            type="text"
-            value={slug}
-            onChange={(e) => setSlug(e.target.value)}
-            placeholder="alice-chen"
-            className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-slate-100"
-          />
-          {!slugValid && slug !== "" && (
-            <p className="text-amber-400 text-xs mt-1">Must match ^[a-z][a-z0-9-_]*$</p>
-          )}
-        </Field>
-
-        <Field label="Name" htmlFor="np-name" hint="Display name shown in the pack list.">
           <input
             id="np-name"
             type="text"
@@ -120,9 +103,16 @@ export function NewPackDialog({ open, onClose }: NewPackDialogProps): JSX.Elemen
             placeholder="Alice Chen"
             className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-slate-100"
           />
+          {name.trim() !== "" && slug === "" && (
+            <p className="text-amber-400 text-xs mt-1">Name needs at least one letter.</p>
+          )}
         </Field>
 
-        <Field label="Author" htmlFor="np-author" hint="Whose writing voice this pack captures.">
+        <Field
+          label="Whose voice is this?"
+          htmlFor="np-author"
+          hint="The person whose writing style this captures."
+        >
           <input
             id="np-author"
             type="text"
@@ -134,9 +124,9 @@ export function NewPackDialog({ open, onClose }: NewPackDialogProps): JSX.Elemen
         </Field>
 
         <Field
-          label="Persona identity"
+          label="Who is the voice?"
           htmlFor="np-identity"
-          hint="A short label for who is 'speaking' — the character or archetype behind the voice."
+          hint="A short archetype or label for who's 'speaking'."
         >
           <input
             id="np-identity"
@@ -149,9 +139,9 @@ export function NewPackDialog({ open, onClose }: NewPackDialogProps): JSX.Elemen
         </Field>
 
         <Field
-          label="Persona one-line"
+          label="What do they stand for?"
           htmlFor="np-oneline"
-          hint="One sentence: what they do and what they stand for."
+          hint="One sentence: what they do and what they believe."
         >
           <input
             id="np-oneline"
@@ -164,9 +154,9 @@ export function NewPackDialog({ open, onClose }: NewPackDialogProps): JSX.Elemen
         </Field>
 
         <Field
-          label="Persona tone (optional)"
+          label="How does it sound? (optional)"
           htmlFor="np-tone"
-          hint="A few adjectives for how it sounds. Leave blank for a neutral default."
+          hint="A few adjectives. Leave blank for a neutral default."
         >
           <input
             id="np-tone"
@@ -179,9 +169,9 @@ export function NewPackDialog({ open, onClose }: NewPackDialogProps): JSX.Elemen
         </Field>
 
         <Field
-          label="Description (optional)"
+          label="Anything to add? (optional)"
           htmlFor="np-desc"
-          hint="Short blurb shown in the pack list."
+          hint="A short blurb shown in the pack list."
         >
           <textarea
             id="np-desc"

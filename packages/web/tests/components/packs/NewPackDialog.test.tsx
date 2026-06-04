@@ -13,6 +13,16 @@ vi.mock("react-router-dom", async () => {
   return { ...actual, useNavigate: () => mockNavigate };
 });
 
+/** Fill the required fields (slug is derived from the name automatically). */
+function fillRequired(name = "Alice Chen"): void {
+  fireEvent.change(screen.getByLabelText("What's this pack called?"), {
+    target: { value: name },
+  });
+  fireEvent.change(screen.getByLabelText("Whose voice is this?"), { target: { value: "A" } });
+  fireEvent.change(screen.getByLabelText("Who is the voice?"), { target: { value: "i" } });
+  fireEvent.change(screen.getByLabelText("What do they stand for?"), { target: { value: "o" } });
+}
+
 beforeEach(() => {
   mockCreate.mockReset();
   mockNavigate.mockReset();
@@ -38,28 +48,25 @@ describe("NewPackDialog", () => {
     );
     const submit = screen.getByRole("button", { name: /Create pack/i });
     expect(submit).toBeDisabled();
-    fireEvent.change(screen.getByLabelText("Slug"), { target: { value: "alice" } });
-    fireEvent.change(screen.getByLabelText("Name"), { target: { value: "Alice" } });
-    fireEvent.change(screen.getByLabelText("Author"), { target: { value: "A" } });
-    fireEvent.change(screen.getByLabelText("Persona identity"), { target: { value: "i" } });
-    fireEvent.change(screen.getByLabelText("Persona one-line"), { target: { value: "o" } });
+    fillRequired();
     expect(submit).toBeEnabled();
   });
 
-  it("rejects bad slugs", () => {
+  it("blocks submit when the name has no letters to form a slug", () => {
     render(
       <MemoryRouter>
         <NewPackDialog open={true} onClose={() => {}} />
       </MemoryRouter>,
     );
-    fireEvent.change(screen.getByLabelText("Slug"), { target: { value: "Foo Bar" } });
-    expect(screen.getByText(/Must match/)).toBeInTheDocument();
+    fillRequired("123");
+    expect(screen.getByText(/Name needs at least one letter/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Create pack/i })).toBeDisabled();
   });
 
-  it("submits and navigates on success", async () => {
+  it("derives the slug from the name and navigates on success", async () => {
     mockCreate.mockResolvedValue({
-      slug: "alice",
-      name: "Alice",
+      slug: "alice-chen",
+      name: "Alice Chen",
       version: "0.1.0",
       valid: true,
       error_count: 0,
@@ -70,16 +77,14 @@ describe("NewPackDialog", () => {
         <NewPackDialog open={true} onClose={onClose} />
       </MemoryRouter>,
     );
-    fireEvent.change(screen.getByLabelText("Slug"), { target: { value: "alice" } });
-    fireEvent.change(screen.getByLabelText("Name"), { target: { value: "Alice" } });
-    fireEvent.change(screen.getByLabelText("Author"), { target: { value: "A" } });
-    fireEvent.change(screen.getByLabelText("Persona identity"), { target: { value: "i" } });
-    fireEvent.change(screen.getByLabelText("Persona one-line"), { target: { value: "o" } });
+    fillRequired("Alice Chen");
     fireEvent.click(screen.getByRole("button", { name: /Create pack/i }));
     await waitFor(() => {
-      expect(mockCreate).toHaveBeenCalled();
+      expect(mockCreate).toHaveBeenCalledWith(
+        expect.objectContaining({ slug: "alice-chen", name: "Alice Chen" }),
+      );
       expect(onClose).toHaveBeenCalled();
-      expect(mockNavigate).toHaveBeenCalledWith("/packs/alice");
+      expect(mockNavigate).toHaveBeenCalledWith("/packs/alice-chen");
     });
   });
 
@@ -90,11 +95,7 @@ describe("NewPackDialog", () => {
         <NewPackDialog open={true} onClose={() => {}} />
       </MemoryRouter>,
     );
-    fireEvent.change(screen.getByLabelText("Slug"), { target: { value: "alice" } });
-    fireEvent.change(screen.getByLabelText("Name"), { target: { value: "Alice" } });
-    fireEvent.change(screen.getByLabelText("Author"), { target: { value: "A" } });
-    fireEvent.change(screen.getByLabelText("Persona identity"), { target: { value: "i" } });
-    fireEvent.change(screen.getByLabelText("Persona one-line"), { target: { value: "o" } });
+    fillRequired("Alice Chen");
     fireEvent.click(screen.getByRole("button", { name: /Create pack/i }));
     await waitFor(() => {
       expect(screen.getByText(/already exists/i)).toBeInTheDocument();
