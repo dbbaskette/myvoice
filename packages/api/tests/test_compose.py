@@ -120,3 +120,22 @@ def test_compose_writing_craft_ordering() -> None:
     craft = out.index("## Section 2: General Writing Craft")
     style_guide = out.index("## Writing Principles")  # from style-guide.md
     assert humanizer < craft < style_guide
+
+
+def test_compose_pack_override_replaces_default(tmp_path: Path) -> None:
+    """A pack-local writing-baseline.md replaces the shared default."""
+    (tmp_path / "stylepack.yaml").write_text(
+        "spec_version: '1.0'\n"
+        "pack:\n  slug: ov\n  name: Override\n  version: '1.0'\n  author: Tester\n"
+        "persona:\n  identity: The Overrider\n  one_line: Replaces the baseline.\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "style-guide.md").write_text("# Style Guide\n\nVoice prose.\n", encoding="utf-8")
+    (tmp_path / "writing-baseline.md").write_text(
+        "- **Pack-specific craft rule.** Only this pack uses it.\n", encoding="utf-8"
+    )
+
+    out = compose(tmp_path)
+    assert "Pack-specific craft rule." in out
+    assert "Concrete over abstract" not in out
+    assert "## Section 2: General Writing Craft" in out
