@@ -58,6 +58,9 @@ export function PackDetailPage(): JSX.Element {
 }
 
 function PackSubNav({ pack }: { pack: PackDetail }): JSX.Element {
+  // Absolute paths so tabs replace the active segment instead of stacking onto
+  // the current deep URL (e.g. /packs/dan/style-guide/manifest/...).
+  const base = `/packs/${encodeURIComponent(pack.slug)}`;
   return (
     <nav className="w-[200px] shrink-0 flex flex-col bg-slate-950/50 border-r border-slate-800">
       <div className="px-4 py-3 border-b border-slate-800">
@@ -68,12 +71,12 @@ function PackSubNav({ pack }: { pack: PackDetail }): JSX.Element {
         </div>
       </div>
       <div className="px-2 py-2 flex-1">
-        <SubLink to="" end label="📋 Overview" />
-        <SubLink to="manifest" label="⚙ Manifest" />
-        <SubLink to="style-guide" label="📝 Style guide" />
-        <SubLink to="formats" label="📄 Formats" count={pack.counts?.formats} />
-        <SubLink to="samples" label="💬 Samples" count={pack.counts?.samples} />
-        <SubLink to="bios" label="👤 Bios" count={pack.counts?.bios} />
+        <SubLink to={base} end label="📋 Overview" />
+        <SubLink to={`${base}/manifest`} label="⚙ Manifest" />
+        <SubLink to={`${base}/style-guide`} label="📝 Style guide" />
+        <SubLink to={`${base}/formats`} label="📄 Formats" count={pack.counts?.formats} />
+        <SubLink to={`${base}/samples`} label="💬 Samples" count={pack.counts?.samples} />
+        <SubLink to={`${base}/bios`} label="👤 Bios" count={pack.counts?.bios} />
       </div>
       <div className="border-t border-slate-800 px-4 py-2 text-xs">
         {pack.valid ? (
