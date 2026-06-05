@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-import { Card, Icon } from "../ui";
+import { Card, Icon, SectionHeader } from "../ui";
 
 interface Props {
   slug: string;
@@ -18,7 +18,12 @@ export function EntriesSection({
   const slugEnc = encodeURIComponent(slug);
   return (
     <Card className="p-5 space-y-3">
-      <h2 className="text-sm font-semibold text-slate-900">Entries</h2>
+      <SectionHeader
+        icon={Icon.Layers}
+        color="teal"
+        title="Entries"
+        description="Formats, samples, and bios."
+      />
       <p className="text-slate-400 text-xs">
         Add or remove entries by editing files in the sub-tabs.
       </p>

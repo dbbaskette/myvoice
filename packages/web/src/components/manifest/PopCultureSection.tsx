@@ -1,5 +1,5 @@
 import type { PopCulture } from "../../api/manifest";
-import { Card } from "../ui";
+import { Card, Icon, SectionHeader } from "../ui";
 import { TagInput } from "./TagInput";
 
 interface Props {
@@ -10,7 +10,12 @@ interface Props {
 export function PopCultureSection({ popCulture, onChange }: Props): JSX.Element {
   return (
     <Card className="p-5 space-y-4">
-      <h2 className="text-sm font-semibold text-slate-900">Pop culture</h2>
+      <SectionHeader
+        icon={Icon.Clapperboard}
+        color="violet"
+        title="Pop culture"
+        description="Franchises this voice may or may not reference."
+      />
       <TagInput
         htmlId="pc-allowed"
         label="Allowed"

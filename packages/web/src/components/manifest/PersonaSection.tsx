@@ -1,5 +1,5 @@
 import type { Persona } from "../../api/manifest";
-import { Card, Input } from "../ui";
+import { Card, Icon, Input, SectionHeader } from "../ui";
 
 interface Props {
   persona: Persona;
@@ -12,7 +12,12 @@ export function PersonaSection({ persona, onChange, errors }: Props): JSX.Elemen
     onChange({ ...persona, [k]: v });
   return (
     <Card className="p-5 space-y-3">
-      <h2 className="text-sm font-semibold text-slate-900">Persona</h2>
+      <SectionHeader
+        icon={Icon.User}
+        color="indigo"
+        title="Persona"
+        description="Who's speaking, and what they stand for."
+      />
       <Field label="Identity" id="ps-identity" error={errors["persona.identity"]}>
         <Input
           id="ps-identity"

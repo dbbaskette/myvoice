@@ -1,5 +1,5 @@
 import type { PackInfo } from "../../api/manifest";
-import { Card, Input, Textarea } from "../ui";
+import { Card, Icon, Input, SectionHeader, Textarea } from "../ui";
 
 interface Props {
   pack: PackInfo;
@@ -12,7 +12,12 @@ export function PackMetadataSection({ pack, onChange, errors }: Props): JSX.Elem
     onChange({ ...pack, [k]: v });
   return (
     <Card className="p-5 space-y-3">
-      <h2 className="text-sm font-semibold text-slate-900">Pack</h2>
+      <SectionHeader
+        icon={Icon.Tag}
+        color="sky"
+        title="Pack"
+        description="Identity and metadata for this pack."
+      />
       <Field label="Slug" id="pm-slug" hint="Renaming not yet supported">
         <Input id="pm-slug" type="text" value={pack.slug} disabled />
       </Field>
