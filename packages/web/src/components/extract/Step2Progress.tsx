@@ -1,4 +1,5 @@
 import { cancelJob } from "../../api/jobs";
+import { Button, Icon } from "../ui";
 
 interface StageState {
   status: "pending" | "running" | "done" | "failed";
@@ -33,15 +34,15 @@ export function Step2Progress({
 
   return (
     <section className="space-y-6 max-w-2xl">
-      <h2 className="text-base font-semibold text-slate-100">Analyzing</h2>
+      <h2 className="text-base font-semibold text-slate-900">Analyzing</h2>
       <ol className="space-y-3">
         {STAGES.map((name) => {
           const s = stages[name] ?? { status: "pending" as const };
           return (
             <li key={name} className="flex items-start gap-3">
-              <Icon status={s.status} />
+              <StageIcon status={s.status} />
               <div className="flex-1">
-                <div className="text-slate-100 capitalize">{name}</div>
+                <div className="text-slate-900 capitalize">{name}</div>
                 {s.message && <div className="text-slate-400 text-xs">{s.message}</div>}
               </div>
             </li>
@@ -49,34 +50,29 @@ export function Step2Progress({
         })}
       </ol>
       {error && (
-        <div className="bg-red-900/40 border border-red-700 text-red-200 rounded p-3 text-sm">
+        <div className="bg-rose-50 border border-rose-200 text-rose-700 rounded-xl p-3 text-sm">
           <div>{error.message}</div>
-          {error.hint && <div className="text-red-300/80 mt-1">{error.hint}</div>}
-          <button
-            type="button"
-            onClick={onBack}
-            className="mt-2 px-3 py-1.5 text-sm border border-red-700 text-red-200 rounded hover:bg-red-900/30"
-          >
+          {error.hint && <div className="text-rose-600/80 mt-1">{error.hint}</div>}
+          <Button variant="secondary" size="sm" onClick={onBack} className="mt-2">
             Back to inputs
-          </button>
+          </Button>
         </div>
       )}
       {!error && (
-        <button
-          type="button"
-          onClick={doCancel}
-          className="px-3 py-1.5 text-sm border border-slate-700 text-slate-300 rounded hover:bg-slate-800"
-        >
+        <Button variant="ghost" size="sm" onClick={doCancel}>
           Cancel
-        </button>
+        </Button>
       )}
     </section>
   );
 }
 
-function Icon({ status }: { status: StageState["status"] }): JSX.Element {
-  if (status === "done") return <span className="text-emerald-400">✓</span>;
-  if (status === "running") return <span className="text-amber-400 animate-pulse">●</span>;
-  if (status === "failed") return <span className="text-red-400">✗</span>;
-  return <span className="text-slate-600">○</span>;
+function StageIcon({ status }: { status: StageState["status"] }): JSX.Element {
+  if (status === "done")
+    return <Icon.Check size={16} className="text-emerald-600 mt-0.5 shrink-0" />;
+  if (status === "running")
+    return <Icon.RefreshCw size={16} className="text-indigo-600 mt-0.5 shrink-0 animate-spin" />;
+  if (status === "failed")
+    return <Icon.AlertCircle size={16} className="text-rose-600 mt-0.5 shrink-0" />;
+  return <Icon.ChevronRight size={16} className="text-slate-300 mt-0.5 shrink-0" />;
 }

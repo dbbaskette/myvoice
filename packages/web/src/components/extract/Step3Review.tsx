@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 import type { AnalysisResult, PackProposal } from "../../api/extract";
 import { saveFromAnalysis } from "../../api/extract";
+import { Button, Card } from "../ui";
 import { BanishedReview } from "./review/BanishedReview";
 import { ExceptionsReview } from "./review/ExceptionsReview";
 import { PersonaReview } from "./review/PersonaReview";
@@ -55,10 +56,10 @@ export function Step3Review({ proposal, packMeta, onBack }: Step3ReviewProps): J
 
   return (
     <div className="space-y-6 max-w-3xl">
-      <div className="bg-slate-900 border border-slate-800 rounded p-3 text-sm text-slate-300">
+      <Card className="p-3 text-sm text-slate-600">
         {sourceCount} source(s) · {wordCount.toLocaleString()} words · {proposal.model} ·{" "}
         {proposal.elapsed_seconds.toFixed(1)}s · ~${proposal.cost_usd.toFixed(4)}
-      </div>
+      </Card>
 
       <PersonaReview
         identity={draft.persona_identity}
@@ -86,8 +87,8 @@ export function Step3Review({ proposal, packMeta, onBack }: Step3ReviewProps): J
       />
 
       <section className="space-y-3">
-        <h2 className="text-base font-semibold text-slate-100">Samples</h2>
-        <p className="text-slate-500 text-xs">Uncheck any you don't want to include.</p>
+        <h2 className="text-base font-semibold text-slate-900">Samples</h2>
+        <p className="text-slate-400 text-xs">Uncheck any you don't want to include.</p>
         <div className="space-y-3">
           {draft.samples.map((s, i) => (
             <SampleCard
@@ -118,29 +119,20 @@ export function Step3Review({ proposal, packMeta, onBack }: Step3ReviewProps): J
         onBannedChange={(v) => setAnalysisField("pop_culture_banned", v)}
       />
 
-      <section className="bg-slate-900 border border-slate-800 rounded p-3 text-sm text-slate-400">
+      <Card className="p-3 text-sm text-slate-600">
         <strong>Bios:</strong> Kept from the <code>_template</code> placeholders. Edit them on the
         Bios tab after saving.
-      </section>
+      </Card>
 
-      {error && <p className="text-red-400 text-sm">{error}</p>}
+      {error && <p className="text-rose-600 text-sm">{error}</p>}
 
       <div className="flex justify-between pt-4">
-        <button
-          type="button"
-          onClick={onBack}
-          className="px-3 py-1.5 text-sm border border-slate-700 text-slate-300 rounded hover:bg-slate-800"
-        >
+        <Button variant="secondary" onClick={onBack}>
           Cancel
-        </button>
-        <button
-          type="button"
-          onClick={save}
-          disabled={saving}
-          className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded disabled:opacity-50"
-        >
+        </Button>
+        <Button onClick={save} disabled={saving}>
           {saving ? "Saving…" : "Save Pack"}
-        </button>
+        </Button>
       </div>
     </div>
   );

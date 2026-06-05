@@ -5,6 +5,7 @@ import { type PackSummary, listPacks } from "../api/packs";
 import { type GlobalEvent, useGlobalEvents } from "../hooks/useGlobalEvents";
 import { ImportPackDialog } from "./packs/ImportPackDialog";
 import { NewPackDialog } from "./packs/NewPackDialog";
+import { Button, Icon, cn } from "./ui";
 
 interface PackListProps {
   className?: string;
@@ -13,7 +14,7 @@ interface PackListProps {
 const BADGE_COLORS = [
   "bg-blue-500",
   "bg-emerald-500",
-  "bg-purple-500",
+  "bg-violet-500",
   "bg-amber-500",
   "bg-pink-500",
   "bg-teal-500",
@@ -60,49 +61,49 @@ export function PackList({ className }: PackListProps): JSX.Element {
 
   return (
     <div className={className}>
-      {error && <p className="text-red-400 text-xs px-2 py-1">Error: {error}</p>}
-      {packs === null && !error && <p className="text-slate-500 text-xs px-2 py-1">Loading…</p>}
+      {error && <p className="text-rose-600 text-xs px-2 py-1">Error: {error}</p>}
+      {packs === null && !error && <p className="text-slate-400 text-xs px-2 py-1">Loading…</p>}
       {packs !== null && packs.length === 0 && (
-        <p className="text-slate-500 text-xs px-2 py-1">No packs found.</p>
+        <p className="text-slate-400 text-xs px-2 py-1">No packs yet.</p>
       )}
-      {packs?.map((p) => (
-        <NavLink
-          key={p.slug}
-          to={`/packs/${encodeURIComponent(p.slug)}`}
-          className={({ isActive }) =>
-            `flex items-center gap-2 px-2 py-1 text-sm rounded ${isActive ? "bg-blue-900/40 text-blue-100" : "text-slate-300 hover:bg-slate-800/60"}`
-          }
-        >
-          <span
-            className={`inline-flex h-4 w-4 items-center justify-center rounded text-[9px] font-semibold text-white ${badgeColor(
-              p.slug,
-            )}`}
+      <div className="flex flex-col gap-0.5">
+        {packs?.map((p) => (
+          <NavLink
+            key={p.slug}
+            to={`/packs/${encodeURIComponent(p.slug)}`}
+            className={({ isActive }) =>
+              cn(
+                "flex items-center gap-2.5 px-2 py-1.5 text-sm rounded-lg transition-colors",
+                isActive
+                  ? "bg-indigo-50 text-indigo-700 font-medium"
+                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
+              )
+            }
           >
-            {p.slug[0]?.toUpperCase() ?? "?"}
-          </span>
-          <span className="truncate flex-1">{p.slug}</span>
-          {!p.valid && (
-            <span className="text-red-400 text-xs" title={`${p.error_count} validation error(s)`}>
-              ✕
+            <span
+              className={cn(
+                "inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[11px] font-semibold text-white",
+                badgeColor(p.slug),
+              )}
+            >
+              {p.slug[0]?.toUpperCase() ?? "?"}
             </span>
-          )}
-        </NavLink>
-      ))}
-      <div className="mt-2 space-y-2">
-        <button
-          type="button"
-          onClick={() => setNewOpen(true)}
-          className="w-full px-2 py-2 text-sm border border-dashed border-slate-700 rounded text-slate-400 hover:text-slate-100 hover:border-slate-500"
-        >
-          + New pack
-        </button>
-        <button
-          type="button"
-          onClick={() => setImportOpen(true)}
-          className="w-full px-2 py-2 text-sm border border-dashed border-slate-700 rounded text-slate-400 hover:text-slate-100 hover:border-slate-500"
-        >
-          Import pack…
-        </button>
+            <span className="truncate flex-1">{p.slug}</span>
+            {!p.valid && (
+              <span title={`${p.error_count} validation error(s)`} className="text-rose-500">
+                <Icon.AlertCircle size={14} />
+              </span>
+            )}
+          </NavLink>
+        ))}
+      </div>
+      <div className="mt-3 flex flex-col gap-1.5">
+        <Button variant="secondary" size="sm" className="w-full" onClick={() => setNewOpen(true)}>
+          <Icon.Plus size={15} /> New pack
+        </Button>
+        <Button variant="ghost" size="sm" className="w-full" onClick={() => setImportOpen(true)}>
+          <Icon.Upload size={15} /> Import pack
+        </Button>
       </div>
       <NewPackDialog open={newOpen} onClose={() => setNewOpen(false)} />
       <ImportPackDialog open={importOpen} onClose={() => setImportOpen(false)} />

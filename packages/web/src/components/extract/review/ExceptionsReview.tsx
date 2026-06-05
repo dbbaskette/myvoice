@@ -11,7 +11,7 @@ export function ExceptionsReview({ values, onChange }: ExceptionsReviewProps): J
   // PermittedExceptionProposal and PermittedException share the same shape { term, reason }
   return (
     <section className="space-y-3">
-      <h2 className="text-base font-semibold text-slate-100">Permitted exceptions</h2>
+      <h2 className="text-base font-semibold text-slate-900">Permitted exceptions</h2>
       <ExceptionsTable
         values={values as PermittedException[]}
         onChange={(next) => onChange(next as PermittedExceptionProposal[])}

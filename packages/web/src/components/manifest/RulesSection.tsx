@@ -1,4 +1,5 @@
 import type { Rules } from "../../api/manifest";
+import { Card } from "../ui";
 import { TagInput } from "./TagInput";
 
 interface Props {
@@ -8,17 +9,17 @@ interface Props {
 
 export function RulesSection({ rules, onChange }: Props): JSX.Element {
   return (
-    <section className="space-y-4">
-      <h2 className="text-base font-semibold text-slate-100">Rules</h2>
+    <Card className="p-5 space-y-4">
+      <h2 className="text-sm font-semibold text-slate-900">Rules</h2>
       <div className="space-y-2">
         <label className="flex items-center gap-3 cursor-pointer">
           <input
             type="checkbox"
             checked={rules.no_em_dashes}
             onChange={(e) => onChange({ ...rules, no_em_dashes: e.target.checked })}
-            className="h-4 w-4 rounded border-slate-600 bg-slate-900 text-emerald-500 focus:ring-emerald-500"
+            className="h-4 w-4 rounded border-slate-300 bg-white text-indigo-600 focus:ring-indigo-500"
           />
-          <span className="text-sm text-slate-200">No em dashes</span>
+          <span className="text-sm text-slate-700">No em dashes</span>
         </label>
         <label className="flex items-center gap-3 cursor-pointer">
           <input
@@ -27,9 +28,9 @@ export function RulesSection({ rules, onChange }: Props): JSX.Element {
             onChange={(e) =>
               onChange({ ...rules, no_ascii_double_hyphen_between_letters: e.target.checked })
             }
-            className="h-4 w-4 rounded border-slate-600 bg-slate-900 text-emerald-500 focus:ring-emerald-500"
+            className="h-4 w-4 rounded border-slate-300 bg-white text-indigo-600 focus:ring-indigo-500"
           />
-          <span className="text-sm text-slate-200">No ASCII double-hyphen between letters</span>
+          <span className="text-sm text-slate-700">No ASCII double-hyphen between letters</span>
         </label>
       </div>
       <TagInput
@@ -39,6 +40,6 @@ export function RulesSection({ rules, onChange }: Props): JSX.Element {
         onChange={(next) => onChange({ ...rules, no_sentence_starters: next })}
         placeholder="Type a word and press Enter…"
       />
-    </section>
+    </Card>
   );
 }

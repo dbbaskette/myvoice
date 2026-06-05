@@ -28,7 +28,7 @@ export function BanishedReview({
 
   return (
     <section className="space-y-4">
-      <h2 className="text-base font-semibold text-slate-100">Banished</h2>
+      <h2 className="text-base font-semibold text-slate-900">Banished</h2>
       <TagInput label="Words" htmlId="br-words" values={wordStrings} onChange={setWords} />
       <TagInput label="Phrases" htmlId="br-phrases" values={phraseStrings} onChange={setPhrases} />
     </section>

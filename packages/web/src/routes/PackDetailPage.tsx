@@ -1,3 +1,4 @@
+import type { LucideIcon } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { NavLink, Navigate, Route, Routes, useParams } from "react-router-dom";
 
@@ -8,6 +9,7 @@ import { PackOverview } from "../components/PackOverview";
 import { DeleteEntryDialog } from "../components/manifest/DeleteEntryDialog";
 import { ManifestForm } from "../components/manifest/ManifestForm";
 import { NewEntryDialog } from "../components/manifest/NewEntryDialog";
+import { Badge, Button, Icon, cn } from "../components/ui";
 import { useGlobalEvents } from "../hooks/useGlobalEvents";
 
 export function PackDetailPage(): JSX.Element {
@@ -31,13 +33,13 @@ export function PackDetailPage(): JSX.Element {
   if (!slug) return <Navigate to="/packs" replace />;
   if (error) {
     return (
-      <div className="p-8 text-red-400">
+      <div className="p-8 text-rose-600">
         Error loading pack <code>{slug}</code>: {error}
       </div>
     );
   }
   if (pack === null) {
-    return <div className="p-8 text-slate-500">Loading pack {slug}…</div>;
+    return <div className="p-8 text-slate-400">Loading pack {slug}…</div>;
   }
 
   return (
@@ -62,27 +64,41 @@ function PackSubNav({ pack }: { pack: PackDetail }): JSX.Element {
   // the current deep URL (e.g. /packs/dan/style-guide/manifest/...).
   const base = `/packs/${encodeURIComponent(pack.slug)}`;
   return (
-    <nav className="w-[200px] shrink-0 flex flex-col bg-slate-950/50 border-r border-slate-800">
-      <div className="px-4 py-3 border-b border-slate-800">
-        <div className="text-slate-100 font-semibold">{pack.slug}</div>
-        <div className="text-slate-500 text-xs mt-0.5">
+    <nav className="w-52 shrink-0 flex flex-col bg-white border-r border-slate-200">
+      <div className="px-4 py-4 border-b border-slate-200">
+        <div className="text-slate-900 font-semibold tracking-tight truncate">{pack.slug}</div>
+        <div className="text-slate-400 text-xs mt-0.5">
           v{pack.version}
           {pack.author ? ` · ${pack.author}` : ""}
         </div>
       </div>
-      <div className="px-2 py-2 flex-1">
-        <SubLink to={base} end label="📋 Overview" />
-        <SubLink to={`${base}/manifest`} label="⚙ Manifest" />
-        <SubLink to={`${base}/style-guide`} label="📝 Style guide" />
-        <SubLink to={`${base}/formats`} label="📄 Formats" count={pack.counts?.formats} />
-        <SubLink to={`${base}/samples`} label="💬 Samples" count={pack.counts?.samples} />
-        <SubLink to={`${base}/bios`} label="👤 Bios" count={pack.counts?.bios} />
+      <div className="px-2 py-2 flex-1 flex flex-col gap-0.5">
+        <SubLink to={base} end icon={Icon.LayoutDashboard} label="Overview" />
+        <SubLink to={`${base}/manifest`} icon={Icon.Sliders} label="Manifest" />
+        <SubLink to={`${base}/style-guide`} icon={Icon.FileText} label="Style guide" />
+        <SubLink
+          to={`${base}/formats`}
+          icon={Icon.Files}
+          label="Formats"
+          count={pack.counts?.formats}
+        />
+        <SubLink
+          to={`${base}/samples`}
+          icon={Icon.MessageSquare}
+          label="Samples"
+          count={pack.counts?.samples}
+        />
+        <SubLink to={`${base}/bios`} icon={Icon.User} label="Bios" count={pack.counts?.bios} />
       </div>
-      <div className="border-t border-slate-800 px-4 py-2 text-xs">
+      <div className="border-t border-slate-200 px-4 py-3">
         {pack.valid ? (
-          <span className="text-emerald-400">● Valid against SPEC v1.0</span>
+          <Badge variant="success">
+            <Icon.CheckCircle size={13} /> Valid · SPEC v1.0
+          </Badge>
         ) : (
-          <span className="text-red-400">● {pack.errors.length} error(s)</span>
+          <Badge variant="danger">
+            <Icon.AlertCircle size={13} /> {pack.errors.length} error(s)
+          </Badge>
         )}
       </div>
     </nav>
@@ -91,23 +107,30 @@ function PackSubNav({ pack }: { pack: PackDetail }): JSX.Element {
 
 interface SubLinkProps {
   to: string;
+  icon: LucideIcon;
   label: string;
   count?: number;
   end?: boolean;
 }
 
-function SubLink({ to, label, count, end }: SubLinkProps): JSX.Element {
+function SubLink({ to, icon: IconCmp, label, count, end }: SubLinkProps): JSX.Element {
   return (
     <NavLink
       to={to}
       end={end}
       className={({ isActive }) =>
-        `flex items-center justify-between px-2 py-1.5 text-sm rounded ${isActive ? "bg-slate-800 text-slate-100" : "text-slate-300 hover:bg-slate-800/60"}`
+        cn(
+          "flex items-center gap-2.5 px-2.5 py-2 text-sm rounded-lg transition-colors",
+          isActive
+            ? "bg-indigo-50 text-indigo-700 font-medium"
+            : "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
+        )
       }
     >
-      <span>{label}</span>
-      {count !== undefined && (
-        <span className="text-[10px] text-slate-500 bg-slate-800 rounded-full px-2 py-0.5">
+      <IconCmp size={16} />
+      <span className="flex-1">{label}</span>
+      {count !== undefined && count > 0 && (
+        <span className="text-[10px] font-medium text-slate-500 bg-slate-100 rounded-full px-1.5 py-0.5">
           {count}
         </span>
       )}
@@ -183,7 +206,7 @@ function FileGroup({ category }: { category: EntryKind }): JSX.Element {
   );
 
   if (!slug) return <div />;
-  if (manifest === null) return <div className="p-6 text-slate-500">Loading…</div>;
+  if (manifest === null) return <div className="p-6 text-slate-400">Loading…</div>;
   const entries = (manifest[category] as Array<{ name?: string; id?: string; file: string }>) ?? [];
 
   // Find the entry's identity (name for formats/bios, id for samples) for the selected file.
@@ -192,21 +215,22 @@ function FileGroup({ category }: { category: EntryKind }): JSX.Element {
 
   return (
     <div className="flex h-full">
-      <div className="w-[220px] shrink-0 flex flex-col border-r border-slate-800 bg-slate-950/30">
-        <ul className="flex-1 overflow-y-auto">
+      <div className="w-[220px] shrink-0 flex flex-col border-r border-slate-200 bg-white">
+        <ul className="flex-1 overflow-y-auto p-1.5">
           {entries.length === 0 ? (
-            <li className="p-4 text-slate-500 text-xs">No {category} yet.</li>
+            <li className="p-3 text-slate-400 text-xs">No {category} yet.</li>
           ) : (
             entries.map((e) => (
               <li key={e.file}>
                 <button
                   type="button"
                   onClick={() => setSelected(e.file)}
-                  className={`w-full text-left px-4 py-2 text-sm ${
+                  className={cn(
+                    "w-full text-left px-2.5 py-2 text-sm rounded-lg transition-colors",
                     selected === e.file
-                      ? "bg-slate-800 text-slate-100"
-                      : "text-slate-300 hover:bg-slate-800/40"
-                  }`}
+                      ? "bg-indigo-50 text-indigo-700 font-medium"
+                      : "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
+                  )}
                 >
                   {e.name ?? e.id ?? e.file}
                 </button>
@@ -214,14 +238,10 @@ function FileGroup({ category }: { category: EntryKind }): JSX.Element {
             ))
           )}
         </ul>
-        <div className="border-t border-slate-800 p-2">
-          <button
-            type="button"
-            onClick={() => setNewOpen(true)}
-            className="w-full px-2 py-1.5 text-sm border border-dashed border-slate-700 rounded text-slate-400 hover:text-slate-100 hover:border-slate-500"
-          >
-            + New {category.slice(0, -1)}
-          </button>
+        <div className="border-t border-slate-200 p-2">
+          <Button variant="secondary" size="sm" className="w-full" onClick={() => setNewOpen(true)}>
+            <Icon.Plus size={14} /> New {category.slice(0, -1)}
+          </Button>
         </div>
       </div>
       <div className="flex-1 min-w-0">
@@ -232,8 +252,8 @@ function FileGroup({ category }: { category: EntryKind }): JSX.Element {
             onDelete={selectedIdent ? () => setDeleteOpen(true) : undefined}
           />
         ) : (
-          <div className="p-6 text-slate-500">
-            No file selected. Click &quot;+ New {category.slice(0, -1)}&quot; to add one.
+          <div className="p-6 text-slate-400">
+            No file selected. Click &quot;New {category.slice(0, -1)}&quot; to add one.
           </div>
         )}
       </div>

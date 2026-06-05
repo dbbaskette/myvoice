@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { Config } from "../../api/config";
 import { listPacks } from "../../api/packs";
+import { Card } from "../ui";
 
 interface DefaultsSectionProps {
   draft: Config;
@@ -16,6 +17,9 @@ const PROVIDER_LABELS: Record<ProviderName, string> = {
 };
 
 const ALL_PROVIDERS: ProviderName[] = ["anthropic", "openai", "google"];
+
+const selectClass =
+  "flex-1 bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus:border-indigo-500";
 
 export function DefaultsSection({ draft, setDraft }: DefaultsSectionProps): JSX.Element {
   const [packSlugs, setPackSlugs] = useState<string[]>([]);
@@ -50,17 +54,21 @@ export function DefaultsSection({ draft, setDraft }: DefaultsSectionProps): JSX.
   };
 
   return (
-    <section className="space-y-4">
-      <h2 className="text-base font-semibold text-slate-200">Defaults</h2>
+    <Card className="p-5 md:p-6">
+      <h2 className="text-sm font-semibold text-slate-900">Defaults</h2>
+      <p className="mt-1 text-sm text-slate-400 mb-4">
+        {enabledProviders.length === 0
+          ? "Add API keys above to enable provider selection."
+          : "Choose which provider and pack to use by default."}
+      </p>
       <div className="space-y-3">
         <div className="flex items-center gap-3">
-          <label htmlFor="default-pack" className="w-48 shrink-0 text-sm text-slate-300">
+          <label htmlFor="default-pack" className="w-48 shrink-0 text-sm text-slate-600">
             Default pack
           </label>
           <select
             id="default-pack"
-            className="flex-1 bg-slate-800 border border-slate-700 rounded px-3 py-1.5 text-sm text-slate-100
-              focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            className={selectClass}
             value={draft.ui.default_pack ?? ""}
             onChange={(e) => setDefaultPack(e.target.value)}
           >
@@ -74,13 +82,12 @@ export function DefaultsSection({ draft, setDraft }: DefaultsSectionProps): JSX.
         </div>
 
         <div className="flex items-center gap-3">
-          <label htmlFor="compose-provider" className="w-48 shrink-0 text-sm text-slate-300">
+          <label htmlFor="compose-provider" className="w-48 shrink-0 text-sm text-slate-600">
             Compose provider
           </label>
           <select
             id="compose-provider"
-            className="flex-1 bg-slate-800 border border-slate-700 rounded px-3 py-1.5 text-sm text-slate-100
-              focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            className={selectClass}
             value={draft.features.default_compose_provider}
             onChange={(e) => setComposeProvider(e.target.value)}
           >
@@ -99,13 +106,12 @@ export function DefaultsSection({ draft, setDraft }: DefaultsSectionProps): JSX.
         </div>
 
         <div className="flex items-center gap-3">
-          <label htmlFor="extraction-provider" className="w-48 shrink-0 text-sm text-slate-300">
+          <label htmlFor="extraction-provider" className="w-48 shrink-0 text-sm text-slate-600">
             Extraction provider
           </label>
           <select
             id="extraction-provider"
-            className="flex-1 bg-slate-800 border border-slate-700 rounded px-3 py-1.5 text-sm text-slate-100
-              focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            className={selectClass}
             value={draft.features.default_extraction_provider}
             onChange={(e) => setExtractionProvider(e.target.value)}
           >
@@ -123,9 +129,6 @@ export function DefaultsSection({ draft, setDraft }: DefaultsSectionProps): JSX.
           </select>
         </div>
       </div>
-      {enabledProviders.length === 0 && (
-        <p className="text-xs text-slate-500">Add API keys above to enable provider selection.</p>
-      )}
-    </section>
+    </Card>
   );
 }

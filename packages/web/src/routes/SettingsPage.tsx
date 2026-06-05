@@ -6,6 +6,7 @@ import { KeysSection } from "../components/settings/KeysSection";
 import { PackPathsSection } from "../components/settings/PackPathsSection";
 import { ServerSection } from "../components/settings/ServerSection";
 import { ThemeSection } from "../components/settings/ThemeSection";
+import { Button, PageHeader } from "../components/ui";
 import { useTheme } from "../hooks/useTheme";
 
 export function SettingsPage(): JSX.Element {
@@ -27,7 +28,7 @@ export function SettingsPage(): JSX.Element {
   useTheme(draft?.ui.theme ?? "system");
 
   if (error) {
-    return <div className="p-8 text-red-400">Error loading settings: {error}</div>;
+    return <div className="p-8 text-rose-600">Error loading settings: {error}</div>;
   }
   if (!draft || !loaded) {
     return <div className="p-8 text-slate-500">Loading settings…</div>;
@@ -52,48 +53,32 @@ export function SettingsPage(): JSX.Element {
   const discard = () => setDraft(loaded);
 
   return (
-    <div className="h-full overflow-y-auto">
-      <div className="max-w-3xl mx-auto px-8 pb-16">
+    <div className="h-full overflow-y-auto bg-slate-50">
+      <div className="max-w-2xl mx-auto px-8 pb-16">
         {/* Sticky action bar */}
-        <div className="sticky top-0 z-10 bg-slate-900 py-4 -mx-8 px-8 border-b border-slate-800 flex items-center justify-between mb-8">
-          <h1 className="text-xl font-semibold text-slate-100">Settings</h1>
+        <div className="sticky top-0 z-10 bg-slate-50 py-4 -mx-8 px-8 border-b border-slate-200 flex items-center justify-between mb-8">
+          <PageHeader title="Settings" />
           <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={discard}
-              disabled={!dirty || saving}
-              className="px-3 py-1.5 text-sm border border-slate-700 rounded text-slate-300
-                hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed"
-            >
+            <Button variant="secondary" size="sm" onClick={discard} disabled={!dirty || saving}>
               Discard
-            </button>
-            <button
-              type="button"
-              onClick={save}
-              disabled={!dirty || saving}
-              className="px-3 py-1.5 text-sm bg-emerald-600 hover:bg-emerald-500 text-white rounded
-                disabled:opacity-40 disabled:cursor-not-allowed"
-            >
+            </Button>
+            <Button variant="primary" size="sm" onClick={save} disabled={!dirty || saving}>
               {saving ? "Saving…" : "Save changes"}
-            </button>
+            </Button>
           </div>
         </div>
 
         {error && (
-          <div className="mb-6 p-3 bg-red-950 border border-red-800 rounded text-red-300 text-sm">
+          <div className="mb-6 p-3 bg-rose-50 border border-rose-200 rounded-lg text-rose-600 text-sm">
             {error}
           </div>
         )}
 
-        <div className="space-y-10">
+        <div className="space-y-5">
           <KeysSection draft={draft} setDraft={setDraft} />
-          <hr className="border-slate-800" />
           <PackPathsSection draft={draft} setDraft={setDraft} />
-          <hr className="border-slate-800" />
           <ThemeSection draft={draft} setDraft={setDraft} />
-          <hr className="border-slate-800" />
           <DefaultsSection draft={draft} setDraft={setDraft} />
-          <hr className="border-slate-800" />
           <ServerSection draft={draft} />
         </div>
       </div>

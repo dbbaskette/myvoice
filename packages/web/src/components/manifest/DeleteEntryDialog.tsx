@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import { type EntryKind, deleteEntry } from "../../api/entries";
+import { Button, Input } from "../ui";
 
 interface DeleteEntryDialogProps {
   slug: string;
@@ -48,7 +49,7 @@ export function DeleteEntryDialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
       onClick={onClose}
       onKeyDown={(e) => {
         if (e.key === "Escape") onClose();
@@ -57,49 +58,44 @@ export function DeleteEntryDialog({
     >
       <dialog
         open
-        className="bg-slate-900 border border-red-800 rounded-lg p-6 w-[480px] max-w-[90vw] space-y-4 m-0"
+        className="bg-white rounded-xl shadow-xl border border-rose-200 p-6 w-[480px] max-w-[90vw] space-y-4 m-0"
         onClick={(e) => e.stopPropagation()}
         onKeyDown={(e) => e.stopPropagation()}
         aria-label={`Delete ${kind.slice(0, -1)}`}
       >
-        <h2 className="text-lg font-semibold text-red-300">
+        <h2 className="text-lg font-semibold text-rose-600">
           Delete {kind.slice(0, -1)} {label}
         </h2>
-        <p className="text-slate-300 text-sm">
+        <p className="text-slate-600 text-sm">
           This removes the manifest entry and deletes the file from disk.
         </p>
         <div>
-          <label htmlFor="de-confirm" className="block text-sm font-medium text-slate-200 mb-1">
-            Type <code>{ident}</code> to confirm:
+          <label htmlFor="de-confirm" className="block text-sm font-medium text-slate-700 mb-1">
+            Type <code className="text-slate-900 bg-slate-100 px-1 rounded">{ident}</code> to
+            confirm:
           </label>
-          <input
+          <Input
             id="de-confirm"
             type="text"
             value={typed}
             onChange={(e) => setTyped(e.target.value)}
-            className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-slate-100"
           />
         </div>
-        {error && <p className="text-red-400 text-sm">{error}</p>}
+        {error && <p className="text-rose-600 text-sm">{error}</p>}
         <div className="flex justify-end gap-2">
-          <button
-            type="button"
+          <Button
+            variant="secondary"
+            size="sm"
             onClick={() => {
               setTyped("");
               onClose();
             }}
-            className="px-3 py-1.5 text-sm border border-slate-700 rounded text-slate-300 hover:bg-slate-800"
           >
             Cancel
-          </button>
-          <button
-            type="button"
-            onClick={confirm}
-            disabled={!canConfirm}
-            className="px-3 py-1.5 text-sm bg-red-700 hover:bg-red-600 text-white rounded disabled:opacity-50"
-          >
+          </Button>
+          <Button variant="danger" size="sm" onClick={confirm} disabled={!canConfirm}>
             {submitting ? "Deleting…" : "Delete"}
-          </button>
+          </Button>
         </div>
       </dialog>
     </div>

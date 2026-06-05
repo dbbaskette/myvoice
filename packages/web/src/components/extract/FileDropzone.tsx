@@ -1,6 +1,7 @@
 import { type ChangeEvent, type DragEvent, useRef, useState } from "react";
 
 import type { UploadFile } from "../../api/extract";
+import { Icon } from "../ui";
 
 interface FileDropzoneProps {
   files: UploadFile[];
@@ -80,8 +81,8 @@ export function FileDropzone({ files, onChange }: FileDropzoneProps): JSX.Elemen
         }}
         onDragLeave={() => setDragOver(false)}
         onDrop={onDrop}
-        className={`border-2 border-dashed rounded p-6 text-center ${
-          dragOver ? "border-emerald-500 bg-emerald-900/10" : "border-slate-700"
+        className={`border-2 border-dashed rounded-xl p-6 text-center transition-colors ${
+          dragOver ? "border-indigo-400 bg-indigo-50" : "border-slate-300"
         }`}
       >
         <button
@@ -90,10 +91,10 @@ export function FileDropzone({ files, onChange }: FileDropzoneProps): JSX.Elemen
           className="w-full text-left cursor-pointer bg-transparent border-0 p-0"
           aria-label="Open file picker"
         >
-          <p className="text-slate-400 text-sm">
+          <p className="text-slate-600 text-sm">
             Drag and drop .md / .txt / .docx files here, or click to pick
           </p>
-          <p className="text-slate-500 text-xs mt-1">Up to {MAX_FILES} files, 5 MB each</p>
+          <p className="text-slate-400 text-xs mt-1">Up to {MAX_FILES} files, 5 MB each</p>
         </button>
         <input
           ref={inputRef}
@@ -110,22 +111,23 @@ export function FileDropzone({ files, onChange }: FileDropzoneProps): JSX.Elemen
           {files.map((f, i) => (
             <span
               key={`${f.name}-${i}`}
-              className="inline-flex items-center gap-1 bg-slate-800 text-slate-200 px-2 py-1 rounded text-xs"
+              className="inline-flex items-center gap-1 bg-slate-100 text-slate-700 px-2 py-1 rounded text-xs"
             >
+              <Icon.FileText size={12} />
               {f.name}
               <button
                 type="button"
                 onClick={() => remove(i)}
                 aria-label={`Remove ${f.name}`}
-                className="text-slate-400 hover:text-red-400"
+                className="text-slate-400 hover:text-rose-600"
               >
-                ×
+                <Icon.X size={12} />
               </button>
             </span>
           ))}
         </div>
       )}
-      {error && <p className="text-red-400 text-xs mt-2">{error}</p>}
+      {error && <p className="text-rose-600 text-xs mt-2">{error}</p>}
     </div>
   );
 }

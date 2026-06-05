@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
 
+import { Card, Icon } from "../ui";
+
 interface Props {
   slug: string;
   formatsCount: number;
@@ -15,9 +17,9 @@ export function EntriesSection({
 }: Props): JSX.Element {
   const slugEnc = encodeURIComponent(slug);
   return (
-    <section className="space-y-3">
-      <h2 className="text-base font-semibold text-slate-100">Entries</h2>
-      <p className="text-slate-500 text-xs">
+    <Card className="p-5 space-y-3">
+      <h2 className="text-sm font-semibold text-slate-900">Entries</h2>
+      <p className="text-slate-400 text-xs">
         Add or remove entries by editing files in the sub-tabs.
       </p>
       <div className="grid grid-cols-3 gap-3">
@@ -25,7 +27,7 @@ export function EntriesSection({
         <EntryCard label="Samples" count={samplesCount} to={`/packs/${slugEnc}/samples`} />
         <EntryCard label="Bios" count={biosCount} to={`/packs/${slugEnc}/bios`} />
       </div>
-    </section>
+    </Card>
   );
 }
 
@@ -37,11 +39,14 @@ function EntryCard({
   return (
     <Link
       to={to}
-      className="block bg-slate-900 border border-slate-800 rounded p-3 hover:border-slate-600"
+      className="block bg-white border border-slate-200 rounded-xl p-3 hover:border-indigo-300 hover:bg-indigo-50 transition-colors"
     >
-      <div className="text-slate-100 font-semibold">{label}</div>
-      <div className="text-slate-400 text-sm">{count} entries</div>
-      <div className="text-slate-500 text-xs mt-1">Edit on the {label} tab →</div>
+      <div className="text-slate-900 font-semibold">{label}</div>
+      <div className="text-slate-600 text-sm">{count} entries</div>
+      <div className="text-slate-400 text-xs mt-1 flex items-center gap-1">
+        Edit on the {label} tab
+        <Icon.ChevronRight size={12} />
+      </div>
     </Link>
   );
 }

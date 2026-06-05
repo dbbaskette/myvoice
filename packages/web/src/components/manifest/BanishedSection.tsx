@@ -1,4 +1,5 @@
 import type { Banished } from "../../api/manifest";
+import { Card } from "../ui";
 import { ExceptionsTable } from "./ExceptionsTable";
 import { TagInput } from "./TagInput";
 
@@ -9,8 +10,8 @@ interface Props {
 
 export function BanishedSection({ banished, onChange }: Props): JSX.Element {
   return (
-    <section className="space-y-4">
-      <h2 className="text-base font-semibold text-slate-100">Banished</h2>
+    <Card className="p-5 space-y-4">
+      <h2 className="text-sm font-semibold text-slate-900">Banished</h2>
       <TagInput
         htmlId="bs-words"
         label="Words"
@@ -26,12 +27,12 @@ export function BanishedSection({ banished, onChange }: Props): JSX.Element {
         placeholder="Type a phrase and press Enter…"
       />
       <div>
-        <p className="block text-sm font-medium text-slate-200 mb-2">Permitted exceptions</p>
+        <p className="block text-sm font-medium text-slate-700 mb-2">Permitted exceptions</p>
         <ExceptionsTable
           values={banished.permitted_exceptions}
           onChange={(next) => onChange({ ...banished, permitted_exceptions: next })}
         />
       </div>
-    </section>
+    </Card>
   );
 }

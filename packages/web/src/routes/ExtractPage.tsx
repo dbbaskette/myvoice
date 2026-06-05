@@ -82,8 +82,8 @@ export function ExtractPage(): JSX.Element {
 
   useExtractJob(jobId, { onStage, onComplete, onError: onErrorEvt });
 
-  if (configError) return <div className="p-8 text-red-400">Error: {configError}</div>;
-  if (!config) return <div className="p-8 text-slate-500">Loading…</div>;
+  if (configError) return <div className="p-8 text-rose-600">Error: {configError}</div>;
+  if (!config) return <div className="p-8 text-slate-400">Loading…</div>;
 
   const onAnalyze = async (): Promise<void> => {
     setError(null);
@@ -115,7 +115,7 @@ export function ExtractPage(): JSX.Element {
 
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-semibold text-slate-100 mb-6">Extract from URLs</h1>
+      <h1 className="text-2xl font-semibold text-slate-900 mb-6">Extract from URLs</h1>
       {step === 1 && (
         <Step1Inputs state={state} config={config} onChange={setState} onAnalyze={onAnalyze} />
       )}

@@ -7,12 +7,12 @@ interface DiffViewProps {
 
 export function DiffView({ oldValue, newValue }: DiffViewProps): JSX.Element {
   return (
-    <div className="text-xs font-mono overflow-auto">
+    <div className="text-xs font-mono overflow-auto bg-white">
       <ReactDiffViewer
         oldValue={oldValue}
         newValue={newValue}
         splitView={true}
-        useDarkTheme={true}
+        useDarkTheme={false}
         leftTitle="Input"
         rightTitle="Output"
         disableWordDiff={false}
