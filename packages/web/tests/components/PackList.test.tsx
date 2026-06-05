@@ -100,7 +100,7 @@ describe("PackList", () => {
       </MemoryRouter>,
     );
     await waitFor(() => {
-      expect(screen.getByText("✕")).toBeInTheDocument();
+      expect(screen.getByTitle("3 validation error(s)")).toBeInTheDocument();
     });
   });
 });
