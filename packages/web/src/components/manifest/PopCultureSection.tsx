@@ -1,4 +1,5 @@
 import type { PopCulture } from "../../api/manifest";
+import { Card } from "../ui";
 import { TagInput } from "./TagInput";
 
 interface Props {
@@ -8,8 +9,8 @@ interface Props {
 
 export function PopCultureSection({ popCulture, onChange }: Props): JSX.Element {
   return (
-    <section className="space-y-4">
-      <h2 className="text-base font-semibold text-slate-100">Pop culture</h2>
+    <Card className="p-5 space-y-4">
+      <h2 className="text-sm font-semibold text-slate-900">Pop culture</h2>
       <TagInput
         htmlId="pc-allowed"
         label="Allowed"
@@ -24,6 +25,6 @@ export function PopCultureSection({ popCulture, onChange }: Props): JSX.Element 
         onChange={(next) => onChange({ ...popCulture, banned: next })}
         placeholder="Type a reference and press Enter…"
       />
-    </section>
+    </Card>
   );
 }

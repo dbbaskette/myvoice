@@ -1,4 +1,5 @@
 import type { Config } from "../../api/config";
+import { Card } from "../ui";
 
 interface ThemeSectionProps {
   draft: Config;
@@ -17,8 +18,9 @@ export function ThemeSection({ draft, setDraft }: ThemeSectionProps): JSX.Elemen
   };
 
   return (
-    <section className="space-y-4">
-      <h2 className="text-base font-semibold text-slate-200">Theme</h2>
+    <Card className="p-5 md:p-6">
+      <h2 className="text-sm font-semibold text-slate-900">Theme</h2>
+      <p className="mt-1 text-sm text-slate-400 mb-4">Choose your preferred color scheme.</p>
       <div className="flex gap-4">
         {THEMES.map(({ value, label }) => (
           <label key={value} className="flex items-center gap-2 cursor-pointer">
@@ -28,12 +30,12 @@ export function ThemeSection({ draft, setDraft }: ThemeSectionProps): JSX.Elemen
               value={value}
               checked={draft.ui.theme === value}
               onChange={() => setTheme(value)}
-              className="accent-emerald-500"
+              className="accent-indigo-600"
             />
-            <span className="text-sm text-slate-300">{label}</span>
+            <span className="text-sm text-slate-600">{label}</span>
           </label>
         ))}
       </div>
-    </section>
+    </Card>
   );
 }

@@ -2,6 +2,7 @@ import { type ChangeEvent, type ReactNode, useEffect, useMemo, useState } from "
 
 import { type Config, type ModelInfo, listModels } from "../../api/config";
 import type { UploadFile } from "../../api/extract";
+import { Button } from "../ui";
 import { CostEstimate } from "./CostEstimate";
 import { FileDropzone } from "./FileDropzone";
 import { UrlList } from "./UrlList";
@@ -88,15 +89,15 @@ export function Step1Inputs({ state, config, onChange, onAnalyze }: Step1InputsP
   return (
     <section className="space-y-6 max-w-3xl">
       <div>
-        <h2 className="text-base font-semibold text-slate-100 mb-2">URLs</h2>
+        <h2 className="text-base font-semibold text-slate-900 mb-2">URLs</h2>
         <UrlList urls={state.urls} onChange={(v) => set("urls", v)} />
       </div>
       <div>
-        <h2 className="text-base font-semibold text-slate-100 mb-2">Files</h2>
+        <h2 className="text-base font-semibold text-slate-900 mb-2">Files</h2>
         <FileDropzone files={state.files} onChange={(v) => set("files", v)} />
       </div>
       <div>
-        <h2 className="text-base font-semibold text-slate-100 mb-2">Pack details</h2>
+        <h2 className="text-base font-semibold text-slate-900 mb-2">Pack details</h2>
         <div className="grid grid-cols-2 gap-3">
           <Field
             label="Slug"
@@ -108,7 +109,7 @@ export function Step1Inputs({ state, config, onChange, onAnalyze }: Step1InputsP
               type="text"
               value={state.slug}
               onChange={(e) => set("slug", e.target.value)}
-              className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-slate-100"
+              className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus:border-indigo-500"
             />
           </Field>
           <Field label="Name" id="ex-name">
@@ -117,7 +118,7 @@ export function Step1Inputs({ state, config, onChange, onAnalyze }: Step1InputsP
               type="text"
               value={state.name}
               onChange={handleName}
-              className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-slate-100"
+              className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus:border-indigo-500"
             />
           </Field>
           <Field label="Author" id="ex-author">
@@ -126,20 +127,20 @@ export function Step1Inputs({ state, config, onChange, onAnalyze }: Step1InputsP
               type="text"
               value={state.author}
               onChange={(e) => set("author", e.target.value)}
-              className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-slate-100"
+              className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus:border-indigo-500"
             />
           </Field>
         </div>
       </div>
       <div>
-        <h2 className="text-base font-semibold text-slate-100 mb-2">LLM</h2>
+        <h2 className="text-base font-semibold text-slate-900 mb-2">LLM</h2>
         <div className="grid grid-cols-2 gap-3">
           <Field label="Provider" id="ex-provider">
             <select
               id="ex-provider"
               value={state.provider}
               onChange={(e) => set("provider", e.target.value as Step1State["provider"])}
-              className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-slate-100"
+              className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus:border-indigo-500"
             >
               {providers.map((p) => {
                 const has = !!config.providers[p].api_key;
@@ -157,7 +158,7 @@ export function Step1Inputs({ state, config, onChange, onAnalyze }: Step1InputsP
               id="ex-model"
               value={state.model}
               onChange={(e) => set("model", e.target.value)}
-              className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-slate-100"
+              className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus:border-indigo-500"
             >
               {models.length === 0 && <option value="">No models</option>}
               {models.map((m) => (
@@ -171,14 +172,9 @@ export function Step1Inputs({ state, config, onChange, onAnalyze }: Step1InputsP
         <CostEstimate inputTextChars={inputChars} provider={state.provider} model={state.model} />
       </div>
       <div className="flex justify-end">
-        <button
-          type="button"
-          onClick={onAnalyze}
-          disabled={!canAnalyze}
-          className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded disabled:opacity-50"
-        >
+        <Button onClick={onAnalyze} disabled={!canAnalyze}>
           Analyze →
-        </button>
+        </Button>
       </div>
     </section>
   );
@@ -201,11 +197,11 @@ interface FieldProps {
 function Field({ label, id, error, children }: FieldProps): JSX.Element {
   return (
     <div>
-      <label htmlFor={id} className="block text-sm font-medium text-slate-200 mb-1">
+      <label htmlFor={id} className="block text-sm font-medium text-slate-700 mb-1">
         {label}
       </label>
       {children}
-      {error && <p className="text-red-400 text-xs mt-1">{error}</p>}
+      {error && <p className="text-rose-600 text-xs mt-1">{error}</p>}
     </div>
   );
 }

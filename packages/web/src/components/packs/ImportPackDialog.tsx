@@ -1,6 +1,7 @@
 import { type ChangeEvent, useState } from "react";
 
 import { importPack } from "../../api/pack_zip";
+import { Button, Icon } from "../ui";
 
 interface ImportPackDialogProps {
   open: boolean;
@@ -57,7 +58,7 @@ export function ImportPackDialog({ open, onClose }: ImportPackDialogProps): JSX.
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
       onClick={close}
       onKeyDown={(e) => {
         if (e.key === "Escape") close();
@@ -66,13 +67,13 @@ export function ImportPackDialog({ open, onClose }: ImportPackDialogProps): JSX.
     >
       <dialog
         open
-        className="bg-slate-900 border border-slate-700 rounded-lg p-6 w-[480px] max-w-[90vw] space-y-4 m-0"
+        className="bg-white border border-slate-200 rounded-xl shadow-xl p-6 w-[480px] max-w-[90vw] space-y-4 m-0"
         onClick={(e) => e.stopPropagation()}
         onKeyDown={(e) => e.stopPropagation()}
         aria-label="Import pack"
       >
-        <h2 className="text-lg font-semibold text-slate-100">Import pack</h2>
-        <p className="text-slate-400 text-sm">
+        <h2 className="text-lg font-semibold text-slate-900">Import pack</h2>
+        <p className="text-slate-600 text-sm">
           Upload a .zip exported from another myvoice install.
         </p>
         <input
@@ -80,31 +81,28 @@ export function ImportPackDialog({ open, onClose }: ImportPackDialogProps): JSX.
           accept=".zip,application/zip"
           onChange={onFile}
           aria-label="Pack zip file"
-          className="block w-full text-sm text-slate-300 file:mr-3 file:px-3 file:py-1.5 file:rounded file:border-0 file:bg-slate-800 file:text-slate-200 hover:file:bg-slate-700"
+          className="block w-full text-sm text-slate-600 file:mr-3 file:px-3 file:py-1.5 file:rounded-lg file:border file:border-slate-200 file:bg-white file:text-slate-700 hover:file:bg-slate-50 file:cursor-pointer"
         />
         {file && (
-          <p className="text-slate-500 text-xs">
+          <p className="text-slate-400 text-xs">
             {file.name} · {(file.size / 1024).toFixed(1)} KB
           </p>
         )}
-        {error && <p className="text-red-400 text-sm">{error}</p>}
-        {success && <p className="text-emerald-400 text-sm">{success}</p>}
+        {error && (
+          <p className="text-rose-600 text-sm flex items-center gap-1.5">
+            <Icon.AlertCircle className="w-4 h-4 shrink-0" />
+            {error}
+          </p>
+        )}
+        {success && <p className="text-emerald-600 text-sm">{success}</p>}
         <div className="flex justify-end gap-2">
-          <button
-            type="button"
-            onClick={close}
-            className="px-3 py-1.5 text-sm border border-slate-700 rounded text-slate-300 hover:bg-slate-800"
-          >
+          <Button type="button" variant="ghost" onClick={close}>
             Cancel
-          </button>
-          <button
-            type="button"
-            onClick={submit}
-            disabled={!file || submitting}
-            className="px-3 py-1.5 text-sm bg-emerald-600 hover:bg-emerald-500 text-white rounded disabled:opacity-50"
-          >
+          </Button>
+          <Button type="button" variant="primary" onClick={submit} disabled={!file || submitting}>
+            <Icon.Upload className="w-4 h-4" />
             {submitting ? "Importing…" : "Import"}
-          </button>
+          </Button>
         </div>
       </dialog>
     </div>

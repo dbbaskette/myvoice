@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ApiError } from "../../api/client";
 import type { Config } from "../../api/config";
 import { listModels } from "../../api/config";
+import { Button, Card, Icon, Input } from "../ui";
 
 interface KeysSectionProps {
   draft: Config;
@@ -39,24 +40,23 @@ function ProviderRow({
       const models = await listModels(provider.key);
       setTest({
         status: "ok",
-        message: `✓ ${models.length} model${models.length === 1 ? "" : "s"}`,
+        message: `${models.length} model${models.length === 1 ? "" : "s"}`,
       });
     } catch (e: unknown) {
       const msg = e instanceof ApiError ? e.message : e instanceof Error ? e.message : String(e);
-      setTest({ status: "error", message: `✗ ${msg}` });
+      setTest({ status: "error", message: msg });
     }
   };
 
   return (
     <div className="flex items-center gap-3">
-      <label htmlFor={inputId} className="w-24 shrink-0 text-sm text-slate-300">
+      <label htmlFor={inputId} className="w-24 shrink-0 text-sm text-slate-600">
         {provider.label}
       </label>
-      <input
+      <Input
         id={inputId}
         type="password"
-        className="flex-1 bg-slate-800 border border-slate-700 rounded px-3 py-1.5 text-sm text-slate-100
-          placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+        className="flex-1"
         placeholder={provider.placeholder}
         value={apiKey}
         onChange={(e) => {
@@ -66,19 +66,20 @@ function ProviderRow({
         autoComplete="off"
         spellCheck={false}
       />
-      <button
-        type="button"
+      <Button
+        variant="secondary"
+        size="sm"
         onClick={handleTest}
         disabled={test.status === "testing" || !apiKey}
-        className="px-2.5 py-1.5 text-xs border border-slate-700 rounded text-slate-300
-          hover:bg-slate-800 disabled:opacity-40 shrink-0"
+        className="shrink-0"
       >
         {test.status === "testing" ? "Testing…" : "Test"}
-      </button>
+      </Button>
       {test.status !== "idle" && test.status !== "testing" && (
         <span
-          className={`text-xs shrink-0 ${test.status === "ok" ? "text-emerald-400" : "text-red-400"}`}
+          className={`text-xs shrink-0 flex items-center gap-1 ${test.status === "ok" ? "text-emerald-600" : "text-rose-600"}`}
         >
+          {test.status === "ok" ? <Icon.Check size={12} /> : <Icon.X size={12} />}
           {test.message}
         </span>
       )}
@@ -98,8 +99,12 @@ export function KeysSection({ draft, setDraft }: KeysSectionProps): JSX.Element 
   };
 
   return (
-    <section className="space-y-4">
-      <h2 className="text-base font-semibold text-slate-200">API keys</h2>
+    <Card className="p-5 md:p-6">
+      <h2 className="text-sm font-semibold text-slate-900">API keys</h2>
+      <p className="mt-1 text-sm text-slate-400 mb-4">
+        Keys are stored in <code className="text-slate-500">~/.myvoice/config.yaml</code> (chmod
+        600). Existing keys appear masked — leave masked to keep the current value.
+      </p>
       <div className="space-y-3">
         {PROVIDERS.map((p) => (
           <ProviderRow
@@ -110,10 +115,6 @@ export function KeysSection({ draft, setDraft }: KeysSectionProps): JSX.Element 
           />
         ))}
       </div>
-      <p className="text-xs text-slate-500">
-        Keys are stored in <code className="text-slate-400">~/.myvoice/config.yaml</code> (chmod
-        600). Existing keys appear masked — leave masked to keep the current value.
-      </p>
-    </section>
+    </Card>
   );
 }

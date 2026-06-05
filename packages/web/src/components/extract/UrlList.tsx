@@ -1,5 +1,7 @@
 import type { ChangeEvent } from "react";
 
+import { Button, Icon } from "../ui";
+
 interface UrlListProps {
   urls: string[];
   onChange: (next: string[]) => void;
@@ -23,25 +25,22 @@ export function UrlList({ urls, onChange }: UrlListProps): JSX.Element {
             onChange={(e: ChangeEvent<HTMLInputElement>) => update(i, e.target.value)}
             placeholder="https://example.com/post"
             aria-label={`URL ${i + 1}`}
-            className="flex-1 bg-slate-950 border border-slate-700 rounded px-3 py-2 text-slate-100"
+            className="flex-1 bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus:border-indigo-500"
           />
           <button
             type="button"
             onClick={() => remove(i)}
             aria-label={`Remove URL ${i + 1}`}
-            className="text-slate-500 hover:text-red-400 px-2"
+            className="text-slate-400 hover:text-rose-600 px-2"
           >
-            ×
+            <Icon.X size={15} />
           </button>
         </div>
       ))}
-      <button
-        type="button"
-        onClick={add}
-        className="text-sm text-emerald-400 hover:text-emerald-300"
-      >
-        + Add URL
-      </button>
+      <Button variant="ghost" size="sm" onClick={add} className="gap-1">
+        <Icon.Plus size={14} />
+        Add URL
+      </Button>
     </div>
   );
 }

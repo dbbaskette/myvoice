@@ -11,6 +11,7 @@ import { InputPane } from "../components/compose/InputPane";
 import { OutputPane } from "../components/compose/OutputPane";
 import type { ReceiptData } from "../components/compose/Receipt";
 import { Receipt } from "../components/compose/Receipt";
+import { Icon } from "../components/ui";
 import type { JobEvent } from "../hooks/useEventStream";
 import { useJobEventStream } from "../hooks/useEventStream";
 
@@ -150,7 +151,8 @@ export function ComposePage(): JSX.Element {
       {receipt && <Receipt receipt={receipt} />}
 
       {toast && (
-        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2 bg-emerald-800 text-emerald-100 text-sm rounded shadow-lg">
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2 bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm rounded-lg shadow-md flex items-center gap-2">
+          <Icon.Check size={14} />
           {toast}
         </div>
       )}

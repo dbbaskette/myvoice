@@ -4,6 +4,7 @@ import { type Manifest, ManifestValidationError, putManifest } from "../../api/m
 import { exportPackUrl } from "../../api/pack_zip";
 import { getManifest } from "../../api/packs";
 import { DeletePackDialog } from "../packs/DeletePackDialog";
+import { Button, Icon } from "../ui";
 import { BanishedSection } from "./BanishedSection";
 import { EntriesSection } from "./EntriesSection";
 import { PackMetadataSection } from "./PackMetadataSection";
@@ -39,7 +40,7 @@ export function ManifestForm({ slug }: ManifestFormProps): JSX.Element {
     };
   }, [slug]);
 
-  if (!draft || !loaded) return <div className="p-6 text-slate-500">Loading manifest…</div>;
+  if (!draft || !loaded) return <div className="p-6 text-slate-400">Loading manifest…</div>;
 
   const dirty = JSON.stringify(loaded) !== JSON.stringify(draft);
 
@@ -76,30 +77,21 @@ export function ManifestForm({ slug }: ManifestFormProps): JSX.Element {
 
   return (
     <div className="p-6 space-y-6 max-w-3xl">
-      <div className="sticky top-0 -mx-6 px-6 py-3 bg-slate-900 border-b border-slate-800 flex items-center justify-between z-10">
-        <h1 className="text-lg font-semibold text-slate-100">Manifest</h1>
+      <div className="sticky top-0 -mx-6 px-6 py-3 bg-white border-b border-slate-200 flex items-center justify-between z-10">
+        <h1 className="text-lg font-semibold text-slate-900">Manifest</h1>
         <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={discard}
-            disabled={!dirty || saving}
-            className="px-3 py-1.5 text-sm border border-slate-700 rounded text-slate-300 hover:bg-slate-800 disabled:opacity-50"
-          >
+          <Button variant="secondary" size="sm" onClick={discard} disabled={!dirty || saving}>
             Discard
-          </button>
-          <button
-            type="button"
-            onClick={save}
-            disabled={!dirty || saving}
-            className="px-3 py-1.5 text-sm bg-emerald-600 hover:bg-emerald-500 text-white rounded disabled:opacity-50"
-          >
+          </Button>
+          <Button variant="primary" size="sm" onClick={save} disabled={!dirty || saving}>
+            <Icon.Save size={14} />
             {saving ? "Saving…" : "Save changes"}
-          </button>
+          </Button>
         </div>
       </div>
 
       {banner && (
-        <div className="bg-red-900/40 border border-red-700 text-red-200 rounded p-3 text-sm">
+        <div className="bg-rose-50 border border-rose-200 text-rose-700 rounded-xl p-3 text-sm">
           {banner}
         </div>
       )}
@@ -130,38 +122,36 @@ export function ManifestForm({ slug }: ManifestFormProps): JSX.Element {
         biosCount={draft.bios.length}
       />
 
-      <section className="space-y-3 pt-6 mt-6 border-t border-slate-800">
-        <h2 className="text-base font-semibold text-slate-100">Distribute</h2>
-        <p className="text-slate-400 text-sm">
+      <section className="space-y-3 pt-6 mt-6 border-t border-slate-200">
+        <h2 className="text-base font-semibold text-slate-900">Distribute</h2>
+        <p className="text-slate-600 text-sm">
           Export this pack as a .zip you can share or re-import elsewhere.
         </p>
         <a
           href={exportPackUrl(slug)}
           download
-          className="inline-block px-3 py-1.5 text-sm border border-slate-700 text-slate-300 rounded hover:bg-slate-800"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors"
         >
+          <Icon.Download size={14} />
           Export pack as .zip
         </a>
       </section>
 
-      <section className="space-y-3 pt-6 mt-6 border-t border-red-900/40">
-        <h2 className="text-base font-semibold text-red-300">Danger zone</h2>
-        <p className="text-slate-400 text-sm">
+      <section className="space-y-3 pt-6 mt-6 border-t border-rose-200">
+        <h2 className="text-base font-semibold text-rose-600">Danger zone</h2>
+        <p className="text-slate-600 text-sm">
           Move this pack to ~/.myvoice/trash/. The files remain on disk and can be restored
           manually.
         </p>
-        <button
-          type="button"
-          onClick={() => setDeleteOpen(true)}
-          className="px-3 py-1.5 text-sm border border-red-700 text-red-300 rounded hover:bg-red-900/30"
-        >
+        <Button variant="danger" size="sm" onClick={() => setDeleteOpen(true)}>
           Delete pack
-        </button>
+        </Button>
       </section>
       <DeletePackDialog slug={slug} open={deleteOpen} onClose={() => setDeleteOpen(false)} />
 
       {toast && (
-        <div className="fixed bottom-4 right-4 bg-emerald-700 text-emerald-50 px-4 py-2 rounded shadow">
+        <div className="fixed bottom-4 right-4 bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-2 rounded-xl shadow-sm flex items-center gap-2">
+          <Icon.CheckCircle size={15} />
           {toast}
         </div>
       )}

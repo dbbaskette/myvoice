@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { Config } from "../../api/config";
+import { Button, Card, Icon, Input } from "../ui";
 
 interface PackPathsSectionProps {
   draft: Config;
@@ -37,52 +38,49 @@ export function PackPathsSection({ draft, setDraft }: PackPathsSectionProps): JS
   };
 
   return (
-    <section className="space-y-4">
-      <h2 className="text-base font-semibold text-slate-200">Pack paths</h2>
-      <div className="space-y-2">
+    <Card className="p-5 md:p-6">
+      <h2 className="text-sm font-semibold text-slate-900">Pack paths</h2>
+      <p className="mt-1 text-sm text-slate-400 mb-4">
+        Directories scanned for voice packs, in priority order.
+      </p>
+      <div className="space-y-2 mb-3">
         {draft.pack_paths.length === 0 && (
-          <p className="text-sm text-slate-500">No pack paths configured.</p>
+          <p className="text-sm text-slate-400">No pack paths configured.</p>
         )}
         {draft.pack_paths.map((path, idx) => (
           // biome-ignore lint/suspicious/noArrayIndexKey: pack_paths is ordered; user reorders via ↑↓
           <div key={`${path}-${idx}`} className="flex items-center gap-2">
-            <span className="flex-1 font-mono text-sm text-slate-300 bg-slate-800 border border-slate-700 rounded px-3 py-1.5 truncate">
+            <span className="flex-1 font-mono text-sm text-slate-900 bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 truncate">
               {path}
             </span>
-            <button
-              type="button"
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => moveUp(idx)}
               disabled={idx === 0}
-              className="px-2 py-1.5 text-xs border border-slate-700 rounded text-slate-400 hover:bg-slate-800 disabled:opacity-30"
               title="Move up"
             >
               ↑
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => moveDown(idx)}
               disabled={idx === draft.pack_paths.length - 1}
-              className="px-2 py-1.5 text-xs border border-slate-700 rounded text-slate-400 hover:bg-slate-800 disabled:opacity-30"
               title="Move down"
             >
               ↓
-            </button>
-            <button
-              type="button"
-              onClick={() => remove(idx)}
-              className="px-2 py-1.5 text-xs border border-red-900 rounded text-red-400 hover:bg-red-950"
-              title="Remove"
-            >
-              ✕
-            </button>
+            </Button>
+            <Button variant="danger" size="sm" onClick={() => remove(idx)} title="Remove">
+              <Icon.Trash size={14} />
+            </Button>
           </div>
         ))}
       </div>
       <div className="flex gap-2">
-        <input
+        <Input
           type="text"
-          className="flex-1 bg-slate-800 border border-slate-700 rounded px-3 py-1.5 text-sm text-slate-100
-            placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          className="flex-1"
           placeholder="/path/to/packs"
           value={newPath}
           onChange={(e) => setNewPath(e.target.value)}
@@ -94,16 +92,11 @@ export function PackPathsSection({ draft, setDraft }: PackPathsSectionProps): JS
           }}
           spellCheck={false}
         />
-        <button
-          type="button"
-          onClick={add}
-          disabled={!newPath.trim()}
-          className="px-3 py-1.5 text-sm border border-slate-700 rounded text-slate-300
-            hover:bg-slate-800 disabled:opacity-40"
-        >
+        <Button variant="secondary" size="sm" onClick={add} disabled={!newPath.trim()}>
+          <Icon.Plus size={14} />
           Add
-        </button>
+        </Button>
       </div>
-    </section>
+    </Card>
   );
 }

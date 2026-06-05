@@ -1,15 +1,19 @@
 .lint-banished_word {
-  background-color: rgba(251, 146, 60, 0.4);
+  background-color: rgba(244, 63, 94, 0.12);
+  border-bottom: 2px solid #f43f5e;
 }
 
 .lint-banished_phrase {
-  background-color: rgba(244, 114, 182, 0.4);
+  background-color: rgba(244, 63, 94, 0.12);
+  border-bottom: 2px solid #f43f5e;
 }
 
 .lint-rule {
-  background-color: rgba(167, 139, 250, 0.4);
+  background-color: rgba(245, 158, 11, 0.15);
+  border-bottom: 2px solid #f59e0b;
 }
 
 .lint-positive_hit {
-  background-color: rgba(74, 222, 128, 0.4);
+  background-color: rgba(16, 185, 129, 0.15);
+  border-bottom: 2px solid #10b981;
 }

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { Config, ModelInfo } from "../../api/config";
 import { getConfig, listModels } from "../../api/config";
 import type { PackSummary } from "../../api/packs";
+import { Button, Icon } from "../ui";
 import { ViewPromptModal } from "./ViewPromptModal";
 
 export interface ComposeControls {
@@ -97,13 +98,13 @@ export function ControlsBar({
   const canRewrite = !running && controls.pack && controls.model;
 
   return (
-    <div className="flex items-center gap-3 px-4 py-2.5 border-b border-slate-800 bg-slate-950 flex-wrap">
+    <div className="flex items-center gap-3 px-4 py-2.5 border-b border-slate-200 bg-white flex-wrap">
       {/* Pack selector */}
-      <label className="flex items-center gap-1.5 text-xs text-slate-400">
+      <label className="flex items-center gap-1.5 text-xs text-slate-600">
         Pack
         <select
-          className="bg-slate-800 border border-slate-700 rounded px-2 py-1 text-sm text-slate-100
-            focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          className="bg-white border border-slate-300 rounded-lg px-2 py-1 text-sm text-slate-900
+            focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
           value={controls.pack}
           onChange={(e) => setControls({ ...controls, pack: e.target.value })}
         >
@@ -115,14 +116,14 @@ export function ControlsBar({
         </select>
       </label>
 
-      <div className="w-px h-5 bg-slate-800" />
+      <div className="w-px h-5 bg-slate-200" />
 
       {/* Provider selector */}
-      <label className="flex items-center gap-1.5 text-xs text-slate-400">
+      <label className="flex items-center gap-1.5 text-xs text-slate-600">
         Provider
         <select
-          className="bg-slate-800 border border-slate-700 rounded px-2 py-1 text-sm text-slate-100
-            focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          className="bg-white border border-slate-300 rounded-lg px-2 py-1 text-sm text-slate-900
+            focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
           value={controls.provider}
           onChange={(e) => setControls({ ...controls, provider: e.target.value, model: "" })}
         >
@@ -139,11 +140,11 @@ export function ControlsBar({
       </label>
 
       {/* Model selector */}
-      <label className="flex items-center gap-1.5 text-xs text-slate-400">
+      <label className="flex items-center gap-1.5 text-xs text-slate-600">
         Model
         <select
-          className="bg-slate-800 border border-slate-700 rounded px-2 py-1 text-sm text-slate-100
-            focus:outline-none focus:ring-2 focus:ring-emerald-500 min-w-[180px]"
+          className="bg-white border border-slate-300 rounded-lg px-2 py-1 text-sm text-slate-900
+            focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 min-w-[180px]"
           value={controls.model}
           onChange={(e) => setControls({ ...controls, model: e.target.value })}
           disabled={loadingModels || models.length === 0}
@@ -163,24 +164,19 @@ export function ControlsBar({
       </label>
 
       <div className="ml-auto flex items-center gap-2">
-        <button
-          type="button"
+        <Button
+          variant="secondary"
+          size="sm"
           onClick={() => setShowPrompt(true)}
           disabled={!controls.pack}
-          className="px-3 py-1.5 text-sm border border-slate-700 rounded text-slate-300
-            hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed"
         >
+          <Icon.Eye size={14} />
           View prompt
-        </button>
-        <button
-          type="button"
-          onClick={onRewrite}
-          disabled={!canRewrite}
-          className="px-4 py-1.5 text-sm bg-emerald-600 hover:bg-emerald-500 text-white rounded
-            disabled:opacity-40 disabled:cursor-not-allowed font-medium"
-        >
+        </Button>
+        <Button variant="primary" size="sm" onClick={onRewrite} disabled={!canRewrite}>
+          <Icon.RefreshCw size={14} />
           {running ? "Rewriting…" : "Rewrite"}
-        </button>
+        </Button>
       </div>
 
       {showPrompt && (

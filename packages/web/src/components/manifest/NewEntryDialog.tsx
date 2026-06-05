@@ -1,6 +1,7 @@
 import { type FormEvent, useState } from "react";
 
 import { type EntryKind, createBio, createFormat, createSample } from "../../api/entries";
+import { Button, Input, Textarea } from "../ui";
 
 const NAME_PATTERN = /^[a-z0-9][a-z0-9\-_]*$/;
 
@@ -112,7 +113,7 @@ export function NewEntryDialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
       onClick={close}
       onKeyDown={(e) => {
         if (e.key === "Escape") close();
@@ -121,12 +122,12 @@ export function NewEntryDialog({
     >
       <dialog
         open
-        className="bg-slate-900 border border-slate-700 rounded-lg p-6 w-[480px] max-w-[90vw] space-y-4 m-0"
+        className="bg-white rounded-xl shadow-xl border border-slate-200 p-6 w-[480px] max-w-[90vw] space-y-4 m-0"
         onClick={(e) => e.stopPropagation()}
         onKeyDown={(e) => e.stopPropagation()}
         aria-label={title}
       >
-        <h2 className="text-lg font-semibold text-slate-100">{title}</h2>
+        <h2 className="text-lg font-semibold text-slate-900">{title}</h2>
         <form onSubmit={submit} className="space-y-4">
           {kind !== "samples" && (
             <Field
@@ -135,49 +136,45 @@ export function NewEntryDialog({
               hint="lowercase, hyphens, no spaces"
               error={nameError}
             >
-              <input
+              <Input
                 id="ne-name"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-slate-100"
               />
               {!nameValid && name !== "" && (
-                <p className="text-amber-400 text-xs mt-1">Must match ^[a-z0-9][a-z0-9-_]*$</p>
+                <p className="text-amber-600 text-xs mt-1">Must match ^[a-z0-9][a-z0-9-_]*$</p>
               )}
             </Field>
           )}
           {kind !== "samples" && (
             <Field label="Description (optional)" htmlFor="ne-desc">
-              <input
+              <Input
                 id="ne-desc"
                 type="text"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-slate-100"
               />
             </Field>
           )}
           {kind === "bios" && (
             <div className="grid grid-cols-2 gap-3">
               <Field label="max_chars" htmlFor="ne-mc">
-                <input
+                <Input
                   id="ne-mc"
                   type="number"
                   min={1}
                   value={maxChars}
                   onChange={(e) => setMaxChars(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-slate-100"
                 />
               </Field>
               <Field label="target_words" htmlFor="ne-tw">
-                <input
+                <Input
                   id="ne-tw"
                   type="number"
                   min={1}
                   value={targetWords}
                   onChange={(e) => setTargetWords(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-slate-100"
                 />
               </Field>
               <div className="col-span-2 flex items-center gap-2">
@@ -186,8 +183,9 @@ export function NewEntryDialog({
                   type="checkbox"
                   checked={thirdPerson}
                   onChange={(e) => setThirdPerson(e.target.checked)}
+                  className="h-4 w-4 rounded border-slate-300 bg-white text-indigo-600 focus:ring-indigo-500"
                 />
-                <label htmlFor="ne-tp" className="text-sm text-slate-200">
+                <label htmlFor="ne-tp" className="text-sm text-slate-700">
                   Third person
                 </label>
               </div>
@@ -196,59 +194,49 @@ export function NewEntryDialog({
           {kind === "samples" && (
             <>
               <Field label="Excerpt" htmlFor="ne-excerpt">
-                <textarea
+                <Textarea
                   id="ne-excerpt"
                   value={excerpt}
                   onChange={(e) => setExcerpt(e.target.value)}
-                  className="w-full h-32 bg-slate-950 border border-slate-700 rounded px-3 py-2 text-slate-100"
+                  className="h-32"
                 />
               </Field>
               <Field label="Source URL (optional)" htmlFor="ne-src">
-                <input
+                <Input
                   id="ne-src"
                   type="url"
                   value={sourceUrl}
                   onChange={(e) => setSourceUrl(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-slate-100"
                 />
               </Field>
               <Field label="Note (optional)" htmlFor="ne-note">
-                <input
+                <Input
                   id="ne-note"
                   type="text"
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-slate-100"
                 />
               </Field>
             </>
           )}
           {kind !== "samples" && (
             <Field label="Initial content (optional)" htmlFor="ne-content">
-              <textarea
+              <Textarea
                 id="ne-content"
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                className="w-full h-24 bg-slate-950 border border-slate-700 rounded px-3 py-2 text-slate-100 font-mono text-sm"
+                className="h-24 font-mono"
               />
             </Field>
           )}
-          {error && <p className="text-red-400 text-sm">{error}</p>}
+          {error && <p className="text-rose-600 text-sm">{error}</p>}
           <div className="flex justify-end gap-2">
-            <button
-              type="button"
-              onClick={close}
-              className="px-3 py-1.5 text-sm border border-slate-700 rounded text-slate-300 hover:bg-slate-800"
-            >
+            <Button variant="secondary" size="sm" onClick={close}>
               Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={!canSubmit}
-              className="px-3 py-1.5 text-sm bg-emerald-600 hover:bg-emerald-500 text-white rounded disabled:opacity-50"
-            >
+            </Button>
+            <Button variant="primary" size="sm" type="submit" disabled={!canSubmit}>
               {submitting ? "Creating…" : "Create"}
-            </button>
+            </Button>
           </div>
         </form>
       </dialog>
@@ -267,12 +255,12 @@ interface FieldProps {
 function Field({ label, htmlFor, hint, error, children }: FieldProps): JSX.Element {
   return (
     <div>
-      <label htmlFor={htmlFor} className="block text-sm font-medium text-slate-200 mb-1">
+      <label htmlFor={htmlFor} className="block text-sm font-medium text-slate-700 mb-1">
         {label}
       </label>
       {children}
-      {hint && !error && <p className="text-slate-500 text-xs mt-1">{hint}</p>}
-      {error && <p className="text-red-400 text-xs mt-1">{error}</p>}
+      {hint && !error && <p className="text-slate-400 text-xs mt-1">{hint}</p>}
+      {error && <p className="text-rose-600 text-xs mt-1">{error}</p>}
     </div>
   );
 }

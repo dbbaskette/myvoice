@@ -16,7 +16,7 @@ export function CostEstimate({
   const outputTokens = 600;
   const cost = estimateCost(provider, model, inputTokens, outputTokens);
   return (
-    <p className="text-slate-500 text-xs mt-2">
+    <p className="text-slate-400 text-xs mt-2">
       Estimated: ~{inputTokens.toLocaleString()} input tokens → ~${cost.toFixed(4)} with {model}{" "}
       (approximate)
     </p>
