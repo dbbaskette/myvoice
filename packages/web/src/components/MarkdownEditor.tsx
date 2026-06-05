@@ -7,6 +7,7 @@ import TurndownService from "turndown";
 
 import { apiFetch } from "../api/client";
 import { getPackFile } from "../api/packs";
+import { Button, Icon, cn } from "./ui";
 
 interface MarkdownEditorProps {
   slug: string;
@@ -39,7 +40,7 @@ export function MarkdownEditor({ slug, path, onDelete }: MarkdownEditorProps): J
     content: "",
     editorProps: {
       attributes: {
-        class: "prose prose-invert prose-slate max-w-none min-h-[400px] p-6 focus:outline-none",
+        class: "prose prose-slate max-w-none min-h-[400px] p-6 focus:outline-none",
       },
     },
   });
@@ -106,10 +107,10 @@ export function MarkdownEditor({ slug, path, onDelete }: MarkdownEditorProps): J
   };
 
   if (error) {
-    return <div className="p-6 text-red-400">Error: {error}</div>;
+    return <div className="p-6 text-rose-600">Error: {error}</div>;
   }
   if (initial === null) {
-    return <div className="p-6 text-slate-500">Loading {path}…</div>;
+    return <div className="p-6 text-slate-400">Loading {path}…</div>;
   }
 
   const dirty =
@@ -117,58 +118,53 @@ export function MarkdownEditor({ slug, path, onDelete }: MarkdownEditorProps): J
     (mode === "raw" && raw !== initial);
 
   return (
-    <div className="flex flex-col h-full">
-      <header className="border-b border-slate-800 px-6 py-3 flex items-center gap-3 bg-slate-900/50">
+    <div className="flex flex-col h-full bg-white">
+      <header className="border-b border-slate-200 px-6 py-3 flex items-center gap-3 bg-white">
         <div className="flex-1 min-w-0">
-          <div className="text-slate-100 font-semibold text-sm">{path}</div>
-          <div className="text-xs text-slate-500 font-mono truncate">
+          <div className="text-slate-900 font-semibold text-sm">{path}</div>
+          <div className="text-xs text-slate-400 font-mono truncate">
             packs/{slug}/{path}
           </div>
         </div>
-        <div className="inline-flex bg-slate-800 rounded p-0.5">
+        <div className="inline-flex bg-slate-100 rounded-lg p-0.5">
           <button
             type="button"
             onClick={() => handleSwitchMode("rich")}
-            className={`px-3 py-1 text-xs rounded ${
-              mode === "rich" ? "bg-slate-700 text-slate-100" : "text-slate-400"
-            }`}
+            className={cn(
+              "px-3 py-1 text-xs rounded-md transition-colors",
+              mode === "rich" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500",
+            )}
           >
             Rich
           </button>
           <button
             type="button"
             onClick={() => handleSwitchMode("raw")}
-            className={`px-3 py-1 text-xs rounded ${
-              mode === "raw" ? "bg-slate-700 text-slate-100" : "text-slate-400"
-            }`}
+            className={cn(
+              "px-3 py-1 text-xs rounded-md transition-colors",
+              mode === "raw" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500",
+            )}
           >
             Raw
           </button>
         </div>
         {onDelete && (
-          <button
-            type="button"
-            onClick={onDelete}
-            className="px-3 py-1 text-xs rounded border border-red-700 text-red-300 hover:bg-red-900/30"
-          >
-            Delete
-          </button>
+          <Button variant="danger" size="sm" onClick={onDelete}>
+            <Icon.Trash size={14} /> Delete
+          </Button>
         )}
-        <button
-          type="button"
-          onClick={handleSave}
-          disabled={saving || !dirty}
-          className="px-4 py-1 text-xs rounded bg-blue-600 text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed"
-        >
-          {saving ? "Saving…" : "Save"}
-        </button>
-        {savedMessage && <span className="text-emerald-400 text-xs">{savedMessage}</span>}
+        <Button size="sm" onClick={handleSave} disabled={saving || !dirty}>
+          <Icon.Save size={14} /> {saving ? "Saving…" : "Save"}
+        </Button>
+        {savedMessage && (
+          <span className="text-emerald-600 text-xs font-medium">{savedMessage}</span>
+        )}
       </header>
 
       {mode === "rich" && editor && (
         <>
           <Toolbar editor={editor} />
-          <div className="flex-1 overflow-y-auto bg-slate-950">
+          <div className="flex-1 overflow-y-auto bg-white">
             <EditorContent editor={editor} />
           </div>
         </>
@@ -177,7 +173,7 @@ export function MarkdownEditor({ slug, path, onDelete }: MarkdownEditorProps): J
         <textarea
           value={raw}
           onChange={(e) => setRaw(e.target.value)}
-          className="flex-1 bg-slate-950 text-slate-200 font-mono text-sm p-6 focus:outline-none resize-none"
+          className="flex-1 bg-white text-slate-800 font-mono text-sm p-6 focus:outline-none resize-none"
         />
       )}
     </div>
@@ -191,7 +187,7 @@ interface ToolbarProps {
 function Toolbar({ editor }: ToolbarProps): JSX.Element | null {
   if (!editor) return null;
   return (
-    <div className="border-b border-slate-800 px-4 py-2 flex gap-1 bg-slate-900/30 text-sm">
+    <div className="border-b border-slate-200 px-4 py-2 flex gap-1 bg-slate-50 text-sm">
       <TButton
         active={editor.isActive("heading", { level: 2 })}
         onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
@@ -204,7 +200,7 @@ function Toolbar({ editor }: ToolbarProps): JSX.Element | null {
       >
         H3
       </TButton>
-      <div className="w-px h-5 bg-slate-700 mx-1" />
+      <div className="w-px h-5 bg-slate-200 mx-1" />
       <TButton
         active={editor.isActive("bold")}
         onClick={() => editor.chain().focus().toggleBold().run()}
@@ -223,7 +219,7 @@ function Toolbar({ editor }: ToolbarProps): JSX.Element | null {
       >
         <s>S</s>
       </TButton>
-      <div className="w-px h-5 bg-slate-700 mx-1" />
+      <div className="w-px h-5 bg-slate-200 mx-1" />
       <TButton
         active={editor.isActive("bulletList")}
         onClick={() => editor.chain().focus().toggleBulletList().run()}
@@ -263,9 +259,10 @@ function TButton({ active, onClick, children }: TButtonProps): JSX.Element {
     <button
       type="button"
       onClick={onClick}
-      className={`px-2 py-1 rounded text-xs ${
-        active ? "bg-slate-700 text-slate-100" : "text-slate-300 hover:bg-slate-800"
-      }`}
+      className={cn(
+        "px-2 py-1 rounded text-xs transition-colors",
+        active ? "bg-slate-200 text-slate-900" : "text-slate-500 hover:bg-slate-100",
+      )}
     >
       {children}
     </button>
